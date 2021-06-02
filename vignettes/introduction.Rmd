@@ -3,11 +3,11 @@ title: "Introduction to GenotypeMixtures"
 output: rmarkdown::html_vignette
 date: "`r Sys.Date()`"
 vignette: >
-  %\VignetteIndexEntry{introduction}
+  %\VignetteIndexEntry{Introduction to GenotypeMixtures}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
-GenotypeMixtures is a handy package that builds on the wonderful souporcell package (Heaton et al. 2020), to stitch together genotypes across multiple single cell genomics experiments with an overlapping mixture experimental design...
+GenotypeMixtures is a handy package that builds on the souporcell package (Heaton et al. 2020), to stitch together genotypes across multiple single cell genomics experiments with an overlapping mixture experimental design...
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
@@ -27,23 +27,23 @@ library(GenotypeMixtures)
 ```
 
 Experimental designs can be read in using this function if you point at a .csv
-```{r}
+```{r, echo=FALSE}
 exp_design_path = system.file("extdata", "multiplex_design_cells.csv", package = "GenotypeMixtures")
 experimental_design <- read_experimental_design(exp_design_path)
-experimental_design <- experimental_design[1:5, ]
+experimental_design <- experimental_design[1:8, ] #just the first 8 channels for simplicity
 experimental_design
 ```
 
 We can also read in the locations of the souporcell directories
-```{r}
+```{r,echo=FALSE}
 locations_file_path = system.file("extdata", "SOC_locations.csv", package = "GenotypeMixtures")
 file_locations <- read_SOC_locations(locations_file_path)
-file_locations <- file_locations[1:5, ]
+file_locations <- file_locations[1:8, ]
 head(file_locations)
 ```
 
 Now we plug this into the main function which constructs a genotype cluster graph
-```{r}
+```{r, echo=FALSE}
 genotype_clustering_output <- construct_genotype_cluster_graph(experimental_design = experimental_design, file_locations = file_locations )
 ```
 
@@ -51,10 +51,14 @@ Now we can plot the graph which stitches together the genotypes
 ```{r}
 genotype_clustering_output$graph_plot
 ```
+
+
 Now we can plot the membership matrix which stitches together the genotypes
 ```{r}
 genotype_clustering_output$membership_plot
 ```
+
+
 We can map these computed genotypes back to the original genotypes in our experimental design
 ```{r}
 cluster_mapping <- membership_map(experimental_design,graph_output =  genotype_clustering_output)

@@ -9,7 +9,7 @@ construct_genotype_cluster_graph(experimental_design, file_locations)
 \arguments{
 \item{experimental_design}{an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes}
 
-\item{file_locations}{path to the .csv file giving channel names as the first column and file paths to the souporcell output in the second column}
+\item{file_locations}{the file locations}
 }
 \value{
 a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships

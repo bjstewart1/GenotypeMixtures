@@ -7,7 +7,7 @@
 cells_to_genotypes(SOC_locations, membership_mat)
 }
 \arguments{
-\item{SOC_locations}{path to the .csv file giving channel names as the first column and file paths to the souporcell output in the second column}
+\item{SOC_locations}{the locations file}
 
 \item{membership_mat}{output of membership_map()}
 }

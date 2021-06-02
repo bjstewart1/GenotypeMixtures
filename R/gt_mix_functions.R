@@ -127,7 +127,7 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
   x <- x[,1]/(x[,1] + x[,2])
   return(x)})
 
-  #and do a double for loop to calculate the length of the intersect / total number of variant calls in the experiment to give us a j dist
+  #and do a double for loop to calculate the mean squared error
   df_list <- list()
   p = 1
   for(i in names(gt_1)){
