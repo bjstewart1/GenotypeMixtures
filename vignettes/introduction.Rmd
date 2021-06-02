@@ -27,8 +27,20 @@ library(GenotypeMixtures)
 
 Experimental designs can be read in using this function if you point at a .csv
 ```{r}
-experimental_design <- read_experimental_design("data/multiplex_design_cells.csv")
-head(experimental_design)
+exp_design_path = system.file("extdata", "multiplex_design_cells.csv", package = "GenotypeMixtures")
+experimental_design <- read_experimental_design(exp_design_path)
+head(experimental_design, 4)
 ```
 
+We can also read in the locations of the souporcell directories
+```{r}
+locations_file_path = system.file("extdata", "SOC_locations.csv", package = "GenotypeMixtures")
+file_locations <- read_experimental_design(locations_file_path)
+head(file_locations)
+```
+
+Now we plug this into the main function which constructs a genotype cluster graph
+```{r}
+genotype_clustering_output <- construct_genotype_cluster_graph(experimental_design = experimental_design, file_locations = file_locations )
+```
 
