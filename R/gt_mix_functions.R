@@ -148,7 +148,7 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
 #' this is a big function that constructs a genotype cluster graph using a set of SOC directories and an experimental design
 #' @export
 #' @param experimental_design an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes
-#' @param file_locations path to the .csv file giving channel names as the first column and file paths to the souporcell output in the second column
+#' @param file_locations the file locations
 #' @return a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships
 #' construct_genotype_cluster_graph()
 construct_genotype_cluster_graph <- function(experimental_design, file_locations){
