@@ -1,0 +1,265 @@
+require(igraph)
+require(reshape2)
+require(ggplot2)
+require(pbapply)
+require(ggraph)
+cluster_color_ramp <- colorRampPalette(colors = c("aquamarine", "orange", "blue", "grey", "red", "pink",
+                                                  "deepskyblue", "yellow", "coral", "darkseagreen1"))
+#' This is a function to read in the experimental design
+#' @export
+#' @param experimental_design_path path to the experimental design .csv file
+#' @return a matrix of the experimental design
+#' read_experimental_design()
+read_experimental_design <- function(experimental_design_path){
+  message("reading experimental design")
+  edesign <- read.csv(experimental_design_path, row.names = 1, header = TRUE)
+  return(edesign)
+}
+#' This is a function to plot the experimental design
+#' @export
+#' @param experimental_design an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes
+#' @return a ggplot experimental design heatmap
+#' plot_experimental_design()
+plot_experimental_design <- function(experimental_design){
+  channels <- factor(rownames(experimental_design))
+  design_df <- reshape2::melt(data.frame(experimental_design, "channel" = rownames(experimental_design)))
+  design_df$channel <- factor(design_df$channel, levels = channels)
+  pl <-  ggplot(design_df,
+                aes(y= channel, x = variable, fill = factor(value))) +
+    ggrastr::geom_tile_rast(color = 'grey80')+
+    scale_fill_manual(values = c('1' = 'black',
+                                 '0' = 'white')) +
+    theme_classic() + coord_fixed() +
+    theme(legend.position = "none", axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_text(size =7.5, color = 'black', face = 'bold'),
+          axis.text = element_text(color = 'black', size = 5, face = 'plain'),
+          axis.text.x = element_text(angle = 45, hjust=1)) +
+    xlab("Donor") + ylab("10X channel")
+  return(pl)
+}
+#' This is a function to get the number of shared genotypes between channels
+#' @export
+#' @param experimental_design design matrix rownames should be microfluidics channels, colnames should be genotypes
+#' @return a matrix of channels and genotypes shared
+# get_shared()
+get_shared <- function(experimental_design){
+  mat <- matrix(NA, ncol = nrow(experimental_design), nrow = nrow(experimental_design))
+  colnames(mat) <- rownames(mat) <- rownames(experimental_design)
+  design <- lapply(rownames(experimental_design), function(x){colnames(experimental_design)[experimental_design[x,] >0]})
+  names(design) <- colnames(mat)
+  for(i in colnames(mat)){
+    for(j in rownames(mat)){
+      mat[i, j] <- length(intersect(design[[i]], design[[j]]))
+    }
+  }
+  mat[lower.tri(mat)] = 0 #we can omit the lower tri because distances will be symmetric
+  #make the lower tri of this longform
+  mat <- reshape::melt(mat)
+  mat <- mat[!mat$value == 0, ]
+  mat <- mat[!mat$X1 == mat$X2, ]
+  colnames(mat) <- c("channel_1", "channel_2", "shared")
+  rownames(mat) <- 1:nrow(mat)
+return(mat)
+}
+#' This is a function to read in the locations of Soup Or Cell outputs
+#' @export
+#' @param SOC_locations path to the .csv file giving channel names as the first column and file paths to the souporcell output in the second column
+#' @return a matrix of SOC file paths and the channel names
+#' read_SOC_locations()
+read_SOC_locations <- function(SOC_locations){
+  message("reading souporcell file locations")
+  locations <- read.csv(SOC_locations, header = TRUE)
+  return(locations)
+}
+#' this is a big function that constructs a genotype cluster graph using a set of SOC directories and an experimental design
+#' @export
+#' @param experimental_design an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes
+#' @SOC_locations path to the .csv file giving channel names as the first column and file paths to the souporcell output in the second column
+#' @return a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships
+#' construct_genotype_cluster_graph()
+construct_genotype_cluster_graph <- function(experimental_design, SOC_locations){
+  file_locations <-  read_SOC_locations(SOC_locations)
+  if(all(file_locations$channel == rownames(experimental_design))){
+    message("checking files")
+  }else{stop("! the channel column of the locations file does not match the rownames of the experimental design matrix")}
+  contrasts <- get_shared(experimental_design)
+    #now make a graph matrix!
+  n_genotypes <- data.frame("n_genotypes" = rowSums(experimental_design)) #this is the number of clusters in each channel
+  ch_use <- rownames(experimental_design)
+  mat_names <- unlist(lapply(ch_use, function(x){
+    paste0(x, "_", c(0:(n_genotypes[x, 1]-1)))
+  })) #these are the names of the clusters in the channels
+ #make a graph matrix -  we will fill this in
+   graph_matrix <- matrix(0, ncol = length(mat_names), nrow = length(mat_names))
+  colnames(graph_matrix) <- rownames(graph_matrix) <- mat_names
+  pb <- txtProgressBar(min = 0, max = nrow(contrasts), style = 3)
+for(x in rownames(contrasts)){
+  #set progress bar
+  setTxtProgressBar(pb, as.numeric(x))
+  #get which experiments we want to compare and get their paths
+  selected_contrast <- as.list(contrasts[x, ])
+  exp1 = as.character(selected_contrast[[1]])
+  exp1_path <- file_locations[file_locations$channel %in% exp1, 2]
+  exp2 = as.character(selected_contrast[[2]])
+  exp2_path <- file_locations[file_locations$channel %in% exp2, 2]
+  #and the number of shared genotypes
+  shared_genotypes = as.integer(selected_contrast[[3]])
+  #make a command to pass to sharedsamples.py
+  command <- paste0("python ./shared_samples.py --experiment1 ", exp1_path, " --experiment2 ", exp2_path, " --shared ", shared_genotypes, " | tail -n +6 | head -n -1")
+  out <- system(command, intern = TRUE) #pass this command to sharedsamples.py
+  #wrange this output into a matrix
+  out <- do.call(rbind, strsplit(out, "\t"))
+  out <- as.data.frame(out)
+  colnames(out) <- out[1, ]
+  out <- out[2:nrow(out), ]
+  rownames(out) <- 1:nrow(out)
+#now rename the clusters by channel names
+    out[,1] <- paste0(exp1, "_", out[,1])
+    out[,2] <- paste0(exp2, "_", out[,2])
+    #and take just the top shared genotypes we are expecting from our design
+    out <- out[1:shared_genotypes, ]
+    #remove duplicates - just take the top losses
+    out <- out[!duplicated(out[, 1]),]
+    out <- out[!duplicated(out[, 2]),]
+    #then fill in the values into our graph matrix
+    for(p in seq_len(nrow(out))){
+      idx_1 <- out[p, 1]
+      idx_2 <- out[p, 2]
+      graph_matrix[idx_1, idx_2] = 1
+      graph_matrix[idx_2, idx_1] = 1
+    }
+}
+  close(pb)
+  #now make a graph using igraph
+  gr <- igraph::graph_from_adjacency_matrix(graph_matrix, mode = "undirected", weighted = NULL)
+  #cluster the graph
+  graph_membership <- igraph::cluster_walktrap(gr)$membership
+  names(graph_membership) <- V(gr)$name
+  cluster_colors <- cluster_color_ramp(length(unique(graph_membership)))
+  names(cluster_colors) <- unique(graph_membership)
+  library(ggraph)
+  set.seed(0)
+  membership_graph_plot <- ggraph(gr, layout = 'fr') + geom_edge_link() +
+    #geom_node_point(pch = 21, aes(fill = factor(clusters)), size = 5) +
+    theme_void() +
+    scale_fill_manual(values = cluster_colors) +
+    theme(legend.position = 'none') + geom_node_label(aes(label = graph_membership, fill = factor(graph_membership)))
+#now get the membership of each of these clusters per channel
+  ident_mat <- matrix(0, ncol = length(ch_use), nrow = length(unique(graph_membership)))
+  colnames(ident_mat) <- ch_use
+  rownames(ident_mat) <- unique(graph_membership)
+  for(i in rownames(ident_mat)){
+    for(j in colnames(ident_mat) ){
+      cl_samples <- colnames(graph_matrix)[graph_membership %in% i]
+      ident_mat[i, j] = any(grep(j, cl_samples))*1
+    }
+  }
+
+  #plot membership by cluster
+  ident_mat_df <- reshape::melt(ident_mat)
+  membership_plot <- ggplot(ident_mat_df, aes(x= factor(X1), y = factor(X2, levels = ch_use), fill = factor(value))) +
+    ggrastr::geom_tile_rast(color = 'grey80') + scale_fill_manual(values = c('1' = 'black',
+                                                                             '0' = 'white')) +
+    theme_classic() + coord_fixed() +
+    theme(legend.position = "none", axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_text(size =7.5, color = 'black', face = 'bold'),
+          axis.text = element_text(color = 'black', size = 5, face = 'plain')) +
+    xlab("Computed genotypes") + ylab("10X channel")
+
+  #now we test whether the graph is a collection  of complete subgraphs
+
+subgraph_checks <- unlist(lapply(unique(graph_membership), function(m){
+    subgraph <- igraph::induced_subgraph(gr, vids = V(gr)$name %in% names(graph_membership)[graph_membership %in% m] )
+    check_complete_graph(subgraph)
+  }))
+
+if(all(subgraph_checks)){
+  message("the membership graph is a collection of complete subgraphs as expected")
+}else{
+  warning("the membership graph is NOT a collection of complete subgraphs - donor genotype matching is probably not possible - please double check the experimental design ")
+}
+  #then return a bunch of stuff
+  return(list("genotype_cluster_graph" = gr,
+              "graph_membership" = graph_membership,
+              "graph_plot" = membership_graph_plot,
+              "membership_plot" = membership_plot,
+              "membership_matrix" = ident_mat))
+}
+#' this is a big function that checks if the genotype graph is a set of complete subgraphs
+#' @export
+#' @param gr an igraph object
+#' @return a message telling you if your graph is a collection of complete subgraphs
+#' check_complete_graph()
+check_complete_graph <- function(gr){
+  expected_edges <- vcount(gr)*(vcount(gr)-1)/2
+  measured_edges <- ecount(gr)
+  return(expected_edges == measured_edges)
+}
+#' this is a function that maps channel membership to genotype ID
+#' @export
+#' @param experimental_design design matrix rownames should be microfluidics channels, colnames should be genotypes
+#' @param graph_output the output of construct_genotype_cluster_graph given as x$genotype_cluster_graph
+#' @return a matrix of channel memberships for each cluster
+#' membership_map()
+membership_map <- function(experimental_design, graph_output){
+  graph_membership <- graph_output$graph_membership
+  memb_mat <- graph_output$membership_matrix
+  ident_mat_df <- reshape::melt(memb_mat)
+  cluster_mapping <- list()
+  n=1
+  for(i in rownames(memb_mat)){
+    for(j in colnames(experimental_design)){
+      if(all(experimental_design[,j] == memb_mat[i,])){
+        chs <- colnames(memb_mat)[memb_mat[i, ] ==1]
+        cluster_mapping[[n]] <- data.frame("channel" = chs, "SOC_cluster" = names(graph_membership[graph_membership == i]), "genotype_cluster" = i, "genotype" = j)
+        n=n+1
+      }
+    }
+  }
+  cluster_mapping <- do.call(rbind, cluster_mapping)
+  #throw a warning message if we can't find all the genotypes
+  if(!all(colnames(experimental_design) %in% unique(cluster_mapping$genotype))){
+    warning("not all genotypes can be recovered - go back and check the experimental design and the number of clusters called")
+  }
+return(cluster_mapping)
+}
+#' this is a function that maps the genotype clusters to genotype names
+#' @export
+#' @param SOC_locations path to the .csv file giving channel names as the first column and file paths to the souporcell output in the second column
+#' @param membership_mat output of membership_map()
+#' @return matrix of cells by genotypes
+#' cells_to_genotypes()
+cells_to_genotypes <- function(SOC_locations, membership_mat){
+  locations <- read_SOC_locations(SOC_locations)
+aggregated_clusters  <-  do.call(rbind, lapply(1:nrow(locations), function(x){
+channel <- locations[x, 1]
+clusters <- read.csv(file.path(locations[x, 2], "clusters.tsv"), sep = "\t")
+clusters <- clusters[, 1:3]
+clusters$channel <- channel
+if(all(clusters$assignment == 0)){
+  clusters$genotype <- membership_mat[membership_mat$channel %in% clusters$channel, "genotype"]
+  clusters$SOC_cluster <- membership_mat[membership_mat$channel %in% clusters$channel, "SOC_cluster"]
+}
+else{
+SOC_cluster <- strsplit(clusters$assignment, "/")
+genotype_mapping <- do.call(rbind, lapply(SOC_cluster, function(soc){
+  if(length(soc) == 1){
+    p <- paste0(channel, "_", soc)
+    gt <- membership_mat[membership_mat$SOC_cluster %in% p, "genotype"]
+    df <- data.frame("genotype" = gt, "SOC_cluster" = p)
+  }else{
+    p1 <- paste0(channel, "_", soc[1])
+    p2 <- paste0(channel, "_", soc[2])
+    gt <- paste0(membership_mat[membership_mat$SOC_cluster %in% p1, "genotype"], "/", membership_mat[membership_mat$SOC_cluster %in% p2, "genotype"])
+    p <- paste0(p1, "/",p2)
+    df <- data.frame("genotype" = gt, "SOC_cluster" = p)
+  }
+  return(df)
+}))
+clusters <- cbind(clusters, genotype_mapping)
+}
+return(clusters)
+}))
+return(aggregated_clusters)}
