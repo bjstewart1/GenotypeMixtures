@@ -1,0 +1,34 @@
+---
+title: "Introduction to GenotypeMixtures"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+GenotypeMixtures is a handy package that builds on the wonderful souporcell package (Heaton et al. 2020), to stitch together genotypes across multiple single cell genomics experiments with an overlapping mixture experimental design...
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Install GenotypeMixtures
+```{r}
+#devtools::install_github("bjstewart1/GenotypeMixtures")
+```
+
+Load GenotypeMixtures
+```{r}
+library(GenotypeMixtures)
+```
+
+Experimental designs can be read in using this function if you point at a .csv
+```{r}
+experimental_design <- read_experimental_design("data/multiplex_design_cells.csv")
+head(experimental_design)
+```
+
+
