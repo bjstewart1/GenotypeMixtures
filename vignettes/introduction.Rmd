@@ -30,13 +30,15 @@ Experimental designs can be read in using this function if you point at a .csv
 ```{r}
 exp_design_path = system.file("extdata", "multiplex_design_cells.csv", package = "GenotypeMixtures")
 experimental_design <- read_experimental_design(exp_design_path)
-head(data.frame(experimental_design), 4)
+experimental_design <- experimental_design[1:5, ]
+experimental_design
 ```
 
 We can also read in the locations of the souporcell directories
 ```{r}
 locations_file_path = system.file("extdata", "SOC_locations.csv", package = "GenotypeMixtures")
 file_locations <- read_SOC_locations(locations_file_path)
+file_locations <- file_locations[1:5, ]
 head(file_locations)
 ```
 

@@ -189,6 +189,7 @@ for(x in rownames(contrasts)){
 }
   close(pb)
   #now make a graph using igraph
+  require(igraph)
   gr <- igraph::graph_from_adjacency_matrix(graph_matrix, mode = "undirected", weighted = NULL)
   #cluster the graph
   graph_membership <- igraph::cluster_walktrap(gr)$membership
