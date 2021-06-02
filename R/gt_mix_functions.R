@@ -284,15 +284,14 @@ return(cluster_mapping)
 }
 #' this is a function that maps the genotype clusters to genotype names
 #' @export
-#' @param SOC_locations path to the .csv file giving channel names as the first column and file paths to the souporcell output in the second column
+#' @param SOC_locations the locations file
 #' @param membership_mat output of membership_map()
 #' @return matrix of cells by genotypes
 #' cells_to_genotypes()
 cells_to_genotypes <- function(SOC_locations, membership_mat){
-  locations <- read_SOC_locations(SOC_locations)
-aggregated_clusters  <-  do.call(rbind, lapply(1:nrow(locations), function(x){
-channel <- locations[x, 1]
-clusters <- read.csv(file.path(locations[x, 2], "clusters.tsv"), sep = "\t")
+aggregated_clusters  <-  do.call(rbind, lapply(1:nrow(SOC_locations), function(x){
+channel <- SOC_locations[x, 1]
+clusters <- read.csv(file.path(SOC_locations[x, 2], "clusters.tsv"), sep = "\t")
 clusters <- clusters[, 1:3]
 clusters$channel <- channel
 if(all(clusters$assignment == 0)){
