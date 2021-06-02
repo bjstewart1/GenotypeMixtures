@@ -106,7 +106,7 @@ for(x in rownames(contrasts)){
   #and the number of shared genotypes
   shared_genotypes = as.integer(selected_contrast[[3]])
   #make a command to pass to sharedsamples.py
-  command <- paste0("python ./shared_samples.py --experiment1 ", exp1_path, " --experiment2 ", exp2_path, " --shared ", shared_genotypes, " | tail -n +6 | head -n -1")
+  command <- paste0("python python/shared_samples.py --experiment1 ", exp1_path, " --experiment2 ", exp2_path, " --shared ", shared_genotypes, " | tail -n +6 | head -n -1")
   out <- system(command, intern = TRUE) #pass this command to sharedsamples.py
   #wrange this output into a matrix
   out <- do.call(rbind, strsplit(out, "\t"))
