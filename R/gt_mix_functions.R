@@ -84,6 +84,7 @@ read_SOC_locations <- function(SOC_locations){
 #' @return a data frame of the shared genotype clusters between the two experiments
 #' #' shared_genotypes()
 shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, experiment_1_name, experiment_2_name ){
+  library(vcfR, quietly = TRUE)
   vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
   vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
   vcf1 =  vcfR::read.vcfR(file.path(experiment_1_path, "cluster_genotypes.vcf"),
@@ -189,7 +190,7 @@ for(x in rownames(contrasts)){
 }
   close(pb)
   #now make a graph using igraph
-  require(igraph)
+  library(igraph, quietly = TRUE)
   gr <- igraph::graph_from_adjacency_matrix(graph_matrix, mode = "undirected", weighted = NULL)
   #cluster the graph
   graph_membership <- igraph::cluster_walktrap(gr)$membership
