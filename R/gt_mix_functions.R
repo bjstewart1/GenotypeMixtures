@@ -3,6 +3,7 @@ require(reshape2)
 require(ggplot2)
 require(pbapply)
 require(ggraph)
+require(vcfR)
 cluster_color_ramp <- colorRampPalette(colors = c("aquamarine", "orange", "blue", "grey", "red", "pink",
                                                   "deepskyblue", "yellow", "coral", "darkseagreen1"))
 #' This is a function to read in the experimental design
@@ -72,14 +73,83 @@ read_SOC_locations <- function(SOC_locations){
   locations <- read.csv(SOC_locations, header = TRUE)
   return(locations)
 }
+
+#' this is a function that compares genotype calls across two experiments
+#' @export
+#' @param experiment_1_path the file path to the first souporcell directory
+#' @param experiment_2_path the file path to the second souporcell directory
+#' @param shared numeric- the number of shared genotypes between the experiments
+#' @return a data frame of the shared genotype clusters between the two experiments
+#' #' shared_genotypes()
+shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, experiment_1_name, experiment_2_name ){
+  vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
+  vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
+  vcf1 =  vcfR::read.vcfR(file.path(experiment_1_path, "cluster_genotypes.vcf"),
+                          verbose = FALSE)
+  vcf2 =  vcfR::read.vcfR(file.path(experiment_2_path, "cluster_genotypes.vcf"),
+                          verbose = FALSE)
+  #get intersection of fix - here we just use
+  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[,2 ], "_", vcf1@fix[,4], "_", vcf1@fix[, 5])
+  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[,2 ], "_", vcf2@fix[,4], "_", vcf2@fix[, 5])
+  intersect_idx <-  intersect(vcf1_idx, vcf2_idx)
+  #subset vcfs to intersect of fix
+  vcf1 <- vcf1[match(intersect_idx, vcf1_idx), ]
+  vcf2 <- vcf2[match(intersect_idx, vcf2_idx), ]
+  #now get the genotype calls
+  gt_1  <- vcf1@gt
+  gt_1 <- lapply(2:ncol(gt_1), function(x){
+     gt1_mat <-  do.call(rbind, strsplit(gt_1[,x], ":"))[, c(2:3)]
+     gt1_mat <- apply(gt1_mat, 2, as.numeric)
+     return(gt1_mat)
+  })
+  names(gt_1) <- 0:(length(gt_1)-1)
+  gt_2 <- vcf2@gt
+  gt_2 <- lapply(2:ncol(gt_2), function(x){
+    gt2_mat <-  do.call(rbind, strsplit(gt_2[,x], ":"))[, c(2:3)]
+    gt2_mat <- apply(gt2_mat, 2, as.numeric)
+    return(gt2_mat)
+  })
+  names(gt_2) <- 0:(length(gt_2)-1)
+
+  #subset to variants that have sufficient counts
+  rs_1 <- lapply(gt_1, rowSums)
+  rs_2 <- lapply(gt_2, rowSums)
+  sufficient_counts <- apply(do.call(cbind, c(rs_1, rs_2)), 2, function(x){x > 10}) #set sufficient counts as 10
+  sufficient_counts <- apply(sufficient_counts, 1, all)
+  #do this subsetting
+  gt_1 <- lapply(gt_1, function(x){x <- x[sufficient_counts, ]
+  x <- x[,1]/(x[,1] + x[,2])
+  return(x)})
+  gt_2 <- lapply(gt_2, function(x){x <- x[sufficient_counts, ]
+  x <- x[,1]/(x[,1] + x[,2])
+  return(x)})
+
+  #and do a double for loop to calculate the length of the intersect / total number of variant calls in the experiment to give us a j dist
+  df_list <- list()
+  p = 1
+  for(i in names(gt_1)){
+    for(j in names(gt_2)){
+      i_geno <- gt_1[[i]]
+      j_geno <- gt_2[[j]]
+      mean_squared_error <- mean((i_geno-j_geno)^2)
+      df <- data.frame("experiment_1" = paste0(experiment_1_name, "_", i), "experiment_2" = paste0(experiment_2_name, "_", j), "mse" = mean_squared_error)
+      df_list[[p]] <- df
+      p = p+1
+    }
+  }
+  df <- do.call(rbind, df_list)
+  df <- df[order(df$mse, decreasing= F), ]
+  df <- df[1:shared, ]
+  return(df)
+}
+
 #' this is a big function that constructs a genotype cluster graph using a set of SOC directories and an experimental design
 #' @export
 #' @param experimental_design an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes
 #' @SOC_locations path to the .csv file giving channel names as the first column and file paths to the souporcell output in the second column
 #' @return a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships
 #' construct_genotype_cluster_graph()
-construct_genotype_cluster_graph <- function(experimental_design, SOC_locations){
-  file_locations <-  read_SOC_locations(SOC_locations)
+construct_genotype_cluster_graph <- function(experimental_design, file_locations){
   if(all(file_locations$channel == rownames(experimental_design))){
     message("checking files")
   }else{stop("! the channel column of the locations file does not match the rownames of the experimental design matrix")}
@@ -104,25 +174,10 @@ for(x in rownames(contrasts)){
   exp2 = as.character(selected_contrast[[2]])
   exp2_path <- file_locations[file_locations$channel %in% exp2, 2]
   #and the number of shared genotypes
-  shared_genotypes = as.integer(selected_contrast[[3]])
-  #make a command to pass to sharedsamples.py
-  command <- paste0("python python/shared_samples.py --experiment1 ", exp1_path, " --experiment2 ", exp2_path, " --shared ", shared_genotypes, " | tail -n +6 | head -n -1")
-  out <- system(command, intern = TRUE) #pass this command to sharedsamples.py
-  #wrange this output into a matrix
-  out <- do.call(rbind, strsplit(out, "\t"))
-  out <- as.data.frame(out)
-  colnames(out) <- out[1, ]
-  out <- out[2:nrow(out), ]
-  rownames(out) <- 1:nrow(out)
-#now rename the clusters by channel names
-    out[,1] <- paste0(exp1, "_", out[,1])
-    out[,2] <- paste0(exp2, "_", out[,2])
-    #and take just the top shared genotypes we are expecting from our design
-    out <- out[1:shared_genotypes, ]
-    #remove duplicates - just take the top losses
-    out <- out[!duplicated(out[, 1]),]
-    out <- out[!duplicated(out[, 2]),]
-    #then fill in the values into our graph matrix
+  shared_gt = as.integer(selected_contrast[[3]])
+  out <- shared_genotypes(experiment_1_path = exp1_path, experiment_2_path = exp2_path, shared = shared_gt,
+                          experiment_1_name = exp1, experiment_2_name = exp2)
+      #then fill in the values into our graph matrix
     for(p in seq_len(nrow(out))){
       idx_1 <- out[p, 1]
       idx_2 <- out[p, 2]
