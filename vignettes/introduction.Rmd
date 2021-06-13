@@ -53,10 +53,14 @@ Now we can plot the graph which stitches together the genotypes
 genotype_clustering_output$graph_plot
 ```
 
-
 Now we can plot the membership matrix which stitches together the genotypes
 ```{r}
 genotype_clustering_output$membership_plot
+```
+
+#now we can plot genotype VAFs
+```{r}
+GenotypeMixtures::plot_cross_vaf(file_locations[2, 2], file_locations[3,2], file_locations[2,1], file_locations[3,1])
 ```
 
 
