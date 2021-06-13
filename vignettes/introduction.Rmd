@@ -32,6 +32,7 @@ exp_design_path = system.file("extdata", "multiplex_design_cells.csv", package =
 experimental_design <- read_experimental_design(exp_design_path)
 experimental_design <- experimental_design[1:10, ] #just the first 8 channels for simplicity
 experimental_design
+plot_experimental_design(experimental_design)
 ```
 
 We can also read in the locations of the souporcell directories

@@ -27,7 +27,7 @@ plot_experimental_design <- function(experimental_design){
   design_df$channel <- factor(design_df$channel, levels = channels)
   pl <-  ggplot(design_df,
                 aes(y= channel, x = variable, fill = factor(value))) +
-    ggrastr::geom_tile_rast(color = 'grey80')+
+    geom_tile(color = 'grey80')+
     scale_fill_manual(values = c('1' = 'black',
                                  '0' = 'white')) +
     theme_classic() + coord_fixed() +
