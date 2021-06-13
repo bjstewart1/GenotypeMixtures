@@ -25,6 +25,7 @@ plot_experimental_design <- function(experimental_design){
   channels <- factor(rownames(experimental_design))
   design_df <- reshape2::melt(data.frame(experimental_design, "channel" = rownames(experimental_design)))
   design_df$channel <- factor(design_df$channel, levels = channels)
+  library(ggplot2)
   pl <-  ggplot(design_df,
                 aes(y= channel, x = variable, fill = factor(value))) +
     geom_tile(color = 'grey80')+
@@ -153,6 +154,7 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
 #' @return a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships
 #' construct_genotype_cluster_graph()
 construct_genotype_cluster_graph <- function(experimental_design, file_locations){
+  library(ggplot2)
   if(all(file_locations$channel == rownames(experimental_design))){
     message("checking files")
   }else{stop("! the channel column of the locations file does not match the rownames of the experimental design matrix")}
