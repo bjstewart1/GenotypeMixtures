@@ -119,7 +119,7 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
   rs_2 <- lapply(gt_2, rowSums)
   sufficient_counts <- apply(do.call(cbind, c(rs_1, rs_2)), 2, function(x){x > 10}) #set sufficient counts as 10
   sufficient_counts <- apply(sufficient_counts, 1, all)
-  #do this subsetting
+  #do this subsetting and calculate the vaf
   gt_1 <- lapply(gt_1, function(x){x <- x[sufficient_counts, ]
   x <- x[,1]/(x[,1] + x[,2])
   return(x)})
@@ -321,3 +321,86 @@ clusters <- cbind(clusters, genotype_mapping)
 return(clusters)
 }))
 return(aggregated_clusters)}
+
+#' this is a function that maps the genotype clusters to genotype names
+#' @export
+#' @param experiment_1_path the SOC directory for the first experiment
+#' @param experiment_2_path the SOC directory for the second experiment
+#' @param experiment_1_name the name of the first experiment
+#' @param experiment_2_name the name of the second experiment
+#' @return matrix of cells by genotypes
+#' cells_to_genotypes()
+plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_name, experiment_2_name){
+  library(vcfR, quietly = TRUE)
+  library(ggplot2)
+  vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
+  vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
+  vcf1 =  vcfR::read.vcfR(file.path(experiment_1_path, "cluster_genotypes.vcf"),
+                          verbose = FALSE)
+  vcf2 =  vcfR::read.vcfR(file.path(experiment_2_path, "cluster_genotypes.vcf"),
+                          verbose = FALSE)
+  #get intersection of fix - here we just use
+  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[,2 ], "_", vcf1@fix[,4], "_", vcf1@fix[, 5])
+  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[,2 ], "_", vcf2@fix[,4], "_", vcf2@fix[, 5])
+  intersect_idx <-  intersect(vcf1_idx, vcf2_idx)
+  #subset vcfs to intersect of fix
+  vcf1 <- vcf1[match(intersect_idx, vcf1_idx), ]
+  vcf2 <- vcf2[match(intersect_idx, vcf2_idx), ]
+  #now get the genotype calls
+  gt_1  <- vcf1@gt
+  gt_1 <- lapply(2:ncol(gt_1), function(x){
+    gt1_mat <-  do.call(rbind, strsplit(gt_1[,x], ":"))[, c(2:3)]
+    gt1_mat <- apply(gt1_mat, 2, as.numeric)
+    return(gt1_mat)
+  })
+  names(gt_1) <- 0:(length(gt_1)-1)
+  gt_2 <- vcf2@gt
+  gt_2 <- lapply(2:ncol(gt_2), function(x){
+    gt2_mat <-  do.call(rbind, strsplit(gt_2[,x], ":"))[, c(2:3)]
+    gt2_mat <- apply(gt2_mat, 2, as.numeric)
+    return(gt2_mat)
+  })
+  names(gt_2) <- 0:(length(gt_2)-1)
+
+  #subset to variants that have sufficient counts
+  rs_1 <- lapply(gt_1, rowSums)
+  rs_2 <- lapply(gt_2, rowSums)
+  sufficient_counts <- apply(do.call(cbind, c(rs_1, rs_2)), 2, function(x){x > 10}) #set sufficient counts as 10
+  sufficient_counts <- apply(sufficient_counts, 1, all)
+  #do this subsetting and calculate the vaf
+  gt_1 <- do.call(rbind, lapply(names(gt_1), function(i){
+    x <- gt_1[[i]]
+    x <- x[sufficient_counts, ]
+    x <- x[,1]/(x[,1] + x[,2])
+    df <- data.frame("VAF" = x, "genotype" = paste0(experiment_1_name, "_", i), "channel" = experiment_1_name)
+    return(df)}))
+  gt_2 <- do.call(rbind, lapply(names(gt_2), function(i){
+    x <- gt_2[[i]]
+    x <- x[sufficient_counts, ]
+    x <- x[,1]/(x[,1] + x[,2])
+    df <- data.frame("VAF" = x, "genotype" = paste0(experiment_2_name, "_", i), "channel" = experiment_2_name)
+    return(df)}))
+
+  #mung this into a big df
+  df_list <- list()
+  p=1
+  for(i in unique(gt_1$genotype)){
+    for(j in unique(gt_2$genotype)){
+      df_list[[p]] <- data.frame(
+        "experiment_1_genotype" = gt_1[gt_1$genotype %in% i, "VAF"],
+        "experiment_2_genotype" = gt_2[gt_2$genotype %in% j, "VAF"],
+        "channel_1" = i,
+        "channel_2" = j)
+      p=p+1
+    }
+  }
+  df <- do.call(rbind, df_list)
+  pl  <-  ggplot(df, aes(x=  experiment_1_genotype, y = experiment_2_genotype)) + geom_point(pch = 19, cex=0.05) +
+    theme_minimal() +
+    facet_wrap(channel_1~channel_2) + coord_fixed() + xlab("") + ylab("")  + ylim(c(0,1)) + xlim(c(0,1)) +
+    theme(
+      strip.text.x = element_blank(),
+      axis.text = element_blank())  + xlab("VAF experiment 1") + ylab("VAF experiment 2")
+
+  return(pl)
+}
