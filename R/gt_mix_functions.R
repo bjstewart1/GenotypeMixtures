@@ -397,12 +397,9 @@ plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_na
     }
   }
   df <- do.call(rbind, df_list)
-  pl  <-  ggplot(df, aes(x=  experiment_1_genotype, y = experiment_2_genotype)) + geom_point(pch = 19, cex=0.05) +
-    theme_minimal() +
-    facet_wrap(channel_1~channel_2) + coord_fixed() + xlab("") + ylab("")  + ylim(c(0,1)) + xlim(c(0,1)) +
-    theme(
-      strip.text.x = element_blank(),
-      axis.text = element_blank())  + xlab("VAF experiment 1") + ylab("VAF experiment 2")
+  pl <- ggplot(df, aes(x = experiment_1_genotype, y = experiment_2_genotype)) +
+    geom_point(pch = 19, cex = 0.05) +
+    facet_grid(rows = vars(channel_2), cols = vars(channel_1)) + coord_fixed() + ylim(c(0, 1)) + xlim(c(0, 1)) + theme_minimal() + theme(axis.text = element_blank())
 
   return(pl)
 }
