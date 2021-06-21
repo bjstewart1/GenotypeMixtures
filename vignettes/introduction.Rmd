@@ -16,7 +16,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-Install GenotypeMixtures
+Install GenotypeMixtures from github. Requires devtools.
 ```{r}
 #devtools::install_github("bjstewart1/GenotypeMixtures")
 ```
@@ -27,19 +27,18 @@ library(GenotypeMixtures)
 ```
 
 Experimental designs can be read in using this function if you point at a .csv
+Alternatively you can read in the .csv however you like, or construct from another file
+The experiments (10X channels should be rows, and the donors should be columns. Membership is denoted by 1 vs 0.
 ```{r, echo=FALSE}
 exp_design_path = system.file("extdata", "multiplex_design_cells.csv", package = "GenotypeMixtures")
-experimental_design <- read_experimental_design(exp_design_path)
-experimental_design <- experimental_design[1:10, ] #just the first 8 channels for simplicity
-experimental_design
+experimental_design <- read_experimental_design(experimental_design_path = exp_design_path)
 plot_experimental_design(experimental_design)
 ```
 
 We can also read in the locations of the souporcell directories
 ```{r,echo=FALSE}
 locations_file_path = system.file("extdata", "SOC_locations.csv", package = "GenotypeMixtures")
-file_locations <- read_SOC_locations(locations_file_path)
-file_locations <- file_locations[1:10, ]
+file_locations <- read_SOC_locations(SOC_locations = locations_file_path)
 head(file_locations)
 ```
 
@@ -53,25 +52,30 @@ Now we can plot the graph which stitches together the genotypes
 genotype_clustering_output$graph_plot
 ```
 
-Now we can plot the membership matrix which stitches together the genotypes
+Now we can plot the membership matrix which tells us which of our genotypes belongs to which mixtures
 ```{r}
 genotype_clustering_output$membership_plot
 ```
 
-#now we can plot genotype VAFs
+Now we can plot genotype VAFs - this is a useful diagnostic plot; matching genotypes should have their variants along the diagnonal.
 ```{r}
-GenotypeMixtures::plot_cross_vaf(file_locations[2, 2], file_locations[3,2], file_locations[2,1], file_locations[3,1])
+plot_cross_vaf(experiment_1_path = file_locations[2, 2], 
+               experiment_2_path = file_locations[3,2], 
+               experiment_1_name = file_locations[2,1],
+               experiment_2_name = file_locations[3,1])
 ```
 
 
 We can map these computed genotypes back to the original genotypes in our experimental design
 ```{r}
-cluster_mapping <- membership_map(experimental_design,graph_output =  genotype_clustering_output)
+cluster_mapping <- membership_map(experimental_design = experimental_design,
+                                  graph_output =  genotype_clustering_output)
 tail(cluster_mapping)
 ```
 Finally we can assign single cells across our experiments to genotype - feed the output of membership_map() to cells_to_genotypes
 The output of this can be easily added to the metadata of your single cell experiment/seurat/anndata object 
 ```{r}
-cell_assignments <- cells_to_genotypes(SOC_locations = file_locations, membership_mat =cluster_mapping)
+cell_assignments <- cells_to_genotypes(SOC_locations = file_locations, 
+                                       membership_mat =cluster_mapping)
 tail(cell_assignments)
 ```

@@ -10,6 +10,10 @@ library(devtools)
 install_github('bjstewart1/GenotypeMixtures')
 ```
 
+### Vignette
+Please see the vignette for a basic guide on how to use this tool
+
+
 ### Dependencies
 | Package |  |
 | :--- | --- |
