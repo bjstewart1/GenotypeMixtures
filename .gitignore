@@ -3,5 +3,7 @@ inst/doc
 .Rhistory
 .Rdata
 .httr-oauth
+*.DS_Store
 .DS_Store
 docs
+*.ipynb_checkpoints
