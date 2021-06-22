@@ -19,10 +19,11 @@ Imports:
     igraph,
     ggraph,
     grDevices,
-    vcfR
+    vcfR,
 Suggests: 
     knitr,
     rmarkdown,
+    markdown,
     pbapply
 VignetteBuilder: knitr
 Collate: 
