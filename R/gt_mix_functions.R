@@ -64,11 +64,11 @@ get_shared <- function(experimental_design){
       mat[i, j] <- length(intersect(design[[i]], design[[j]]))
     }
   }
-  mat[lower.tri(mat)] = 0 #we can omit the lower tri because distances will be symmetric
-  #make the lower tri of this longform
+  mat[lower.tri(mat)] = 0 # we can omit the lower tri because distances will be symmetric
+  # make the lower tri of this longform
   mat <- reshape2::melt(mat)
   mat <- mat[!mat$value == 0, ]
-  mat <- mat[!mat$X1 == mat$X2, ]
+  mat <- mat[!mat$Var1 == mat$Var2, ]
   colnames(mat) <- c("channel_1", "channel_2", "shared")
   rownames(mat) <- 1:nrow(mat)
 return(mat)
@@ -168,14 +168,13 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
 #' @param experimental_design an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes
 #' @param file_locations the file locations
 #' @return a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships
-#' @import igraph ggraph utils
+#' @import igraph ggraph utils ggplot2
 #' @examples
 #' \donttest{
 #' construct_genotype_cluster_graph()
 #' }
 #' @export
 construct_genotype_cluster_graph <- function(experimental_design, file_locations){
-  library(ggplot2)
   if(all(file_locations$channel == rownames(experimental_design))){
     message("checking files")
   }else{stop("! the channel column of the locations file does not match the rownames of the experimental design matrix")}
