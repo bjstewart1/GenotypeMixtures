@@ -64,13 +64,13 @@ jobs:
         if: matrix.config.os == 'ubuntu-latest'
         run: |
           sudo apt-get install libcurl4-openssl-dev
-          sysreqs=$(Rscript -e 'cat("apt-get update -y && apt-get install -y", paste(gsub("apt-get install -y ", "", remotes::system_requirements("ubuntu", "20.04", package = c("textrank","udpipe","dplyr","pbmcapply","superml","igraph","FNN","S4Vectors","ggraph","leiden","devtools","roxygen2"))), collapse = " "))')
+          sysreqs=$(Rscript -e 'cat("apt-get update -y && apt-get install -y", paste(paste(gsub("apt-get install -y ", "", remotes::system_requirements("ubuntu", "20.04", package = c("reshape2", "ggplot2", "igraph", "ggraph", "grDevices", "vcfR", "knitr", "rmarkdown", "markdown", "pbapply"))), collapse = " "), 'pandoc', collapse = " "))')
           echo $sysreqs
           sudo -s eval "$sysreqs"
       - name: Install macOS system dependencies
         if: matrix.config.os == 'macos-latest'
         run: |
-          brew install cairo pkg-config autoconf automake libtool
+          brew install cairo pkg-config autoconf automake libtool pandoc homebrew/cask/basictex
       
       - name: Cache ubuntu R packages
         if: "!contains(github.event.head_commit.message, '/nocache') && matrix.config.os == 'ubuntu-latest'"
