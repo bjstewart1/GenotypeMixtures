@@ -25,7 +25,7 @@ read_experimental_design <- function(experimental_design_path){
 #' }
 #' @export
 plot_experimental_design <- function(experimental_design){
-  requireNameSpace("reshape2")
+  requireNamespace("reshape2")
   channels <- factor(rownames(experimental_design))
   design_df <- reshape2::melt(data.frame(experimental_design, "channel" = rownames(experimental_design)))
   design_df$channel <- factor(design_df$channel, levels = channels)
@@ -54,7 +54,7 @@ plot_experimental_design <- function(experimental_design){
 #' }
 #' @export
 get_shared <- function(experimental_design){
-  requireNameSpace('reshape2')
+  requireNamespace('reshape2')
   mat <- matrix(NA, ncol = nrow(experimental_design), nrow = nrow(experimental_design))
   colnames(mat) <- rownames(mat) <- rownames(experimental_design)
   design <- lapply(rownames(experimental_design), function(x){colnames(experimental_design)[experimental_design[x,] >0]})
@@ -213,7 +213,7 @@ for(x in rownames(contrasts)){
 }
   close(pb)
   #now make a graph using igraph
-  requireNameSpace('igraph')
+  requireNamespace('igraph')
   gr <- igraph::graph_from_adjacency_matrix(graph_matrix, mode = "undirected", weighted = NULL)
   #cluster the graph
   graph_membership <- igraph::cluster_walktrap(gr)$membership
@@ -293,7 +293,7 @@ check_complete_graph <- function(gr){
 #' }
 #' @export
 membership_map <- function(experimental_design, graph_output){
-  requireNameSpace("reshape2")
+  requireNamespace("reshape2")
   graph_membership <- graph_output$graph_membership
   memb_mat <- graph_output$membership_matrix
   ident_mat_df <- reshape2::melt(memb_mat)
@@ -370,7 +370,7 @@ return(aggregated_clusters)}
 #' }
 #' @export
 plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_name, experiment_2_name){
-  requireNameSpace("vcfR")
+  requireNamespace("vcfR")
   vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
   vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
   vcf1 =  vcfR::read.vcfR(file.path(experiment_1_path, "cluster_genotypes.vcf"),
