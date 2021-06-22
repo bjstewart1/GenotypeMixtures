@@ -97,7 +97,7 @@ jobs:
         shell: Rscript {0}
         
       - name: Check
-        run: rcmdcheck::rcmdcheck(args = "--no-manual", "--as-cran", "--no-build-vignettes"", error_on = "error")
+        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
 
       # - name: Test coverage
