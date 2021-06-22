@@ -11,8 +11,12 @@ plot_experimental_design(experimental_design)
 }
 \value{
 a ggplot experimental design heatmap
-plot_experimental_design()
 }
 \description{
 This is a function to plot the experimental design
+}
+\examples{
+\donttest{
+#' plot_experimental_design()
+}
 }
