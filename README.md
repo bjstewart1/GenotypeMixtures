@@ -1,3 +1,5 @@
+[![build](https://github.com/bjstewart1/GenotypeMixtures/actions/workflows/build.yaml/badge.svg)](https://github.com/bjstewart1/GenotypeMixtures/actions/workflows/build.yaml)
+
 # GenotypeMixtures
 This is an R package which allows users to take the genotype calls from souporcell and stich together genotype clusters across large single cell genomics projects with multiple microfluidic channel experiments where cells are multiplexed in an overlapping mixture design. 
 
