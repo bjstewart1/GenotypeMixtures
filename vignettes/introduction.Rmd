@@ -79,3 +79,14 @@ cell_assignments <- cells_to_genotypes(SOC_locations = file_locations,
                                        membership_mat =cluster_mapping)
 tail(cell_assignments)
 ```
+
+The package can also output an experimental design with varying levels of density
+```{r}
+dense_design <- make_overlapping_mixture(n_mixtures = 3, n_genotypes = 5, density = 1 )
+sparse_design <- make_overlapping_mixture(n_mixtures = 3, n_genotypes = 5, density = 0.5 )
+plot_experimental_design(dense_design)
+plot_experimental_design(sparse_design)
+
+```
+
+
