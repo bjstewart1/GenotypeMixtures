@@ -452,36 +452,42 @@ plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_na
 #' make_overlapping_mixture()
 #' }
 #' @export
-make_overlapping_mixture <- function(n_mixtures, n_genotypes, density = 1){
-  max_genotypes = 2^n_mixtures -1
-  if(n_genotypes > max_genotypes){
+make_overlapping_mixture <- function (n_mixtures, n_genotypes, density = 1) {
+  max_genotypes = 2^n_mixtures - 1
+  if (n_genotypes > max_genotypes) {
     message("too many genotypes")
-  }else{
-    #run two sets of cbinds after finding combinations
-    exp_design   <- do.call(cbind, lapply(1:n_mixtures, function(m){
+  }
+  else {
+    exp_design <- do.call(cbind, lapply(1:n_mixtures, function(m) {
       mixture_names <- paste0("mixtures_", 1:n_mixtures)
-      comb  <- combn(mixture_names, m = m, simplify = TRUE)
-      p=1
+      comb <- combn(mixture_names, m = m, simplify = TRUE)
+      p = 1
       combo_list <- list()
-      for(i in 1:ncol(comb)){
+      for (i in 1:ncol(comb)) {
         vec <- mixture_names %in% comb[, i]
         names(vec) <- mixture_names
         combo_list[[p]] <- vec
-        p = p+1
+        p = p + 1
       }
       return(do.call(cbind, combo_list) * 1)
     }))
     colnames(exp_design) <- paste0("genotype_", 1:max_genotypes)
-    #make some windows over this to control the density
-    windows <- 1:(ncol(exp_design)-n_genotypes)
-    windows <- lapply(windows, function(x){
-      colnames(exp_design)[c(x:(x+n_genotypes-1))]
+    windows <- 1:(ncol(exp_design) - n_genotypes)
+    windows <- lapply(windows, function(x) {
+      colnames(exp_design)[c(x:(x + n_genotypes - 1))]
     })
+    #at this point check that all the windows incorporate all the channels - this can be a problem if the n mixtures is high and n genotypes is low and the density is low
+    window_rs <- lapply(windows, function(x){
+      all(rowSums(exp_design[, x]) > 0)
+    } )
+    windows <- windows[unlist(window_rs)]
     window_density <- 1:length(windows)/length(windows)
-    if(n_genotypes == max_genotypes){
+    if (n_genotypes == max_genotypes) {
       window_select <- windows[[1]]
-    }else{
-      window_select <- windows[[which.min(abs(window_density-density))]]
+    }
+    else {
+      window_select <- windows[[which.min(abs(window_density -
+                                                density))]]
     }
     exp_design <- exp_design[, window_select]
     colnames(exp_design) <- paste0("genotype_", 1:n_genotypes)
