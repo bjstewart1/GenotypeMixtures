@@ -446,7 +446,7 @@ plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_na
 #' @param n_mixtures the number of mixtures to include
 #' @param n_genotypes the number of genotypes to include
 #' @param density the density of the design - numeric value from 0->1
-#' @return matrix of cells by genotypes
+#' @return matrix of mixtures by genotypes
 #' @examples
 #' \donttest{
 #' make_overlapping_mixture()
