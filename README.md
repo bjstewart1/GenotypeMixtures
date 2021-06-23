@@ -12,6 +12,9 @@ library(devtools)
 install_github('bjstewart1/GenotypeMixtures')
 ```
 
+### Vignette
+A vignette is available at https://bjstewart1.github.io/GenotypeMixtures
+
 ### Dependencies
 | Package |  |
 | :--- | --- |
