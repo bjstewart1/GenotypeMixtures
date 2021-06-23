@@ -15,3 +15,8 @@ a matrix of channels and genotypes shared
 \description{
 This is a function to get the number of shared genotypes between channels
 }
+\examples{
+\donttest{
+# get_shared()
+}
+}

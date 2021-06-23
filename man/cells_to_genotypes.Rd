@@ -13,8 +13,12 @@ cells_to_genotypes(SOC_locations, membership_mat)
 }
 \value{
 matrix of cells by genotypes
-cells_to_genotypes()
 }
 \description{
 this is a function that maps the genotype clusters to genotype names
+}
+\examples{
+\donttest{
+cells_to_genotypes()
+}
 }

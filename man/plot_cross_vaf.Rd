@@ -22,8 +22,12 @@ plot_cross_vaf(
 }
 \value{
 matrix of cells by genotypes
-cells_to_genotypes()
 }
 \description{
 this is a function that maps the genotype clusters to genotype names
+}
+\examples{
+\donttest{
+cells_to_genotypes()
+}
 }

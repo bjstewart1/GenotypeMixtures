@@ -13,8 +13,12 @@ construct_genotype_cluster_graph(experimental_design, file_locations)
 }
 \value{
 a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships
-construct_genotype_cluster_graph()
 }
 \description{
 this is a big function that constructs a genotype cluster graph using a set of SOC directories and an experimental design
+}
+\examples{
+\donttest{
+construct_genotype_cluster_graph()
+}
 }

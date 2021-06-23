@@ -11,8 +11,12 @@ read_SOC_locations(SOC_locations)
 }
 \value{
 a matrix of SOC file paths and the channel names
-read_SOC_locations()
 }
 \description{
 This is a function to read in the locations of Soup Or Cell outputs
+}
+\examples{
+\donttest{
+#' read_SOC_locations()
+}
 }

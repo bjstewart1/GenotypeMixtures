@@ -11,8 +11,12 @@ check_complete_graph(gr)
 }
 \value{
 a message telling you if your graph is a collection of complete subgraphs
-check_complete_graph()
 }
 \description{
 this is a big function that checks if the genotype graph is a set of complete subgraphs
+}
+\examples{
+\donttest{
+check_complete_graph()
+}
 }

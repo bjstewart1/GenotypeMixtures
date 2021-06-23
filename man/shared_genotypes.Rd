@@ -25,8 +25,12 @@ shared_genotypes(
 }
 \value{
 a data frame of the shared genotype clusters between the two experiments
-#' shared_genotypes()
 }
 \description{
 this is a function that compares genotype calls across two experiments
+}
+\examples{
+\donttest{
+#' shared_genotypes()
+}
 }

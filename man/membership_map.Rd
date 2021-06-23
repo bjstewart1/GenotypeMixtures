@@ -13,8 +13,12 @@ membership_map(experimental_design, graph_output)
 }
 \value{
 a matrix of channel memberships for each cluster
-membership_map()
 }
 \description{
 this is a function that maps channel membership to genotype ID
+}
+\examples{
+\donttest{
+membership_map()
+}
 }

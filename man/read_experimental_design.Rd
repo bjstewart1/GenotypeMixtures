@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{read_experimental_design}
 \alias{read_experimental_design}
-\title{This is a function to read in the experimental design}
+\title{read_experimental_design}
 \usage{
 read_experimental_design(experimental_design_path)
 }
@@ -11,8 +11,12 @@ read_experimental_design(experimental_design_path)
 }
 \value{
 a matrix of the experimental design
-read_experimental_design()
 }
 \description{
-This is a function to read in the experimental design
+read_experimental_design
+}
+\examples{
+\donttest{
+read_experimental_design()
+}
 }
