@@ -29,7 +29,7 @@ plot_experimental_design <- function(experimental_design){
   channels <- factor(rownames(experimental_design))
   design_df <- reshape2::melt(data.frame(experimental_design, "channel" = rownames(experimental_design)))
   design_df$channel <- factor(design_df$channel, levels = channels)
-  
+
   pl <-  ggplot(design_df,
                 aes(y= channel, x = variable, fill = factor(value))) +
     geom_tile(color = 'grey80')+
@@ -190,8 +190,6 @@ construct_genotype_cluster_graph <- function(experimental_design, file_locations
   colnames(graph_matrix) <- rownames(graph_matrix) <- mat_names
   pb <- txtProgressBar(min = 0, max = nrow(contrasts), style = 3)
 for(x in rownames(contrasts)){
-  #set progress bar
-  setTxtProgressBar(pb, as.numeric(x))
   #get which experiments we want to compare and get their paths
   selected_contrast <- as.list(contrasts[x, ])
   exp1 = as.character(selected_contrast[[1]])
@@ -209,6 +207,8 @@ for(x in rownames(contrasts)){
       graph_matrix[idx_1, idx_2] = 1
       graph_matrix[idx_2, idx_1] = 1
     }
+  #set progress bar
+  setTxtProgressBar(pb, as.numeric(x))
 }
   close(pb)
   #now make a graph using igraph
@@ -216,15 +216,16 @@ for(x in rownames(contrasts)){
   gr <- igraph::graph_from_adjacency_matrix(graph_matrix, mode = "undirected", weighted = NULL)
   #cluster the graph
   graph_membership <- igraph::cluster_walktrap(gr)$membership
-  names(graph_membership) <- V(gr)$name
-  cluster_colors <- cluster_color_ramp(length(unique(graph_membership)))
+  names(graph_membership) <- igraph::V(gr)$name
+  cluster_colors <- cluster_color_ramp()(length(unique(graph_membership)))
   names(cluster_colors) <- unique(graph_membership)
+  requireNamespace('ggraph')
   set.seed(0)
-  membership_graph_plot <- ggraph(gr, layout = 'fr') + geom_edge_link() +
+  membership_graph_plot <- ggraph::ggraph(gr, layout = 'fr') + ggraph::geom_edge_link() +
     #geom_node_point(pch = 21, aes(fill = factor(clusters)), size = 5) +
     theme_void() +
     scale_fill_manual(values = cluster_colors) +
-    theme(legend.position = 'none') + geom_node_label(aes(label = graph_membership, fill = factor(graph_membership)))
+    theme(legend.position = 'none') + ggraph::geom_node_label(aes(label = graph_membership, fill = factor(graph_membership)))
 #now get the membership of each of these clusters per channel
   ident_mat <- matrix(0, ncol = length(ch_use), nrow = length(unique(graph_membership)))
   colnames(ident_mat) <- ch_use
@@ -251,7 +252,8 @@ for(x in rownames(contrasts)){
   #now we test whether the graph is a collection  of complete subgraphs
 
 subgraph_checks <- unlist(lapply(unique(graph_membership), function(m){
-    subgraph <- igraph::induced_subgraph(gr, vids = V(gr)$name %in% names(graph_membership)[graph_membership %in% m] )
+  requireNamespace('igraph')
+    subgraph <- igraph::induced_subgraph(gr, vids = igraph::V(gr)$name %in% names(graph_membership)[graph_membership %in% m] )
     check_complete_graph(subgraph)
   }))
 
@@ -277,8 +279,9 @@ if(all(subgraph_checks)){
 #' }
 #' @export
 check_complete_graph <- function(gr){
-  expected_edges <- vcount(gr)*(vcount(gr)-1)/2
-  measured_edges <- ecount(gr)
+  requireNamespace('igraph')
+  expected_edges <- igraph::vcount(gr)*(igraph::vcount(gr)-1)/2
+  measured_edges <- igraph::ecount(gr)
   return(expected_edges == measured_edges)
 }
 #' this is a function that maps channel membership to genotype ID
@@ -408,13 +411,13 @@ plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_na
   gt_1 <- do.call(rbind, lapply(names(gt_1), function(i){
     x <- gt_1[[i]]
     x <- x[sufficient_counts, ]
-    x <- x[,1]/(x[,1] + x[,2])
+    x <- x[,2]/(x[,1] + x[,2])
     df <- data.frame("VAF" = x, "genotype" = paste0(experiment_1_name, "_", i), "channel" = experiment_1_name)
     return(df)}))
   gt_2 <- do.call(rbind, lapply(names(gt_2), function(i){
     x <- gt_2[[i]]
     x <- x[sufficient_counts, ]
-    x <- x[,1]/(x[,1] + x[,2])
+    x <- x[,2]/(x[,1] + x[,2])
     df <- data.frame("VAF" = x, "genotype" = paste0(experiment_2_name, "_", i), "channel" = experiment_2_name)
     return(df)}))
 
