@@ -238,8 +238,9 @@ for(x in rownames(contrasts)){
   }
 
   #plot membership by cluster
-  ident_mat_df <- reshape::melt(ident_mat)
-  membership_plot <- ggplot(ident_mat_df, aes(x= factor(X1), y = factor(X2, levels = ch_use), fill = factor(value))) +
+  requireNamespace("reshape2")
+  ident_mat_df <- reshape2::melt(ident_mat)
+  membership_plot <- ggplot(ident_mat_df, aes(x= factor(Var1), y = factor(Var2, levels = ch_use), fill = factor(value))) +
     geom_tile(color = 'grey80') + scale_fill_manual(values = c('1' = 'black',
                                                                              '0' = 'white')) +
     theme_classic() + coord_fixed() +
