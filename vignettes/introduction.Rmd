@@ -84,9 +84,9 @@ tail(cell_assignments)
 
 The package can also output an experimental design with varying levels of density
 ```{r}
-dense_design <- make_overlapping_mixture(n_mixtures = 10, n_genotypes = 5, density = 1 )
-medium_density_design <- make_overlapping_mixture(n_mixtures = 10, n_genotypes = 5, density = 0.5 )
-sparse_design <- make_overlapping_mixture(n_mixtures = 10, n_genotypes = 5, density = 0 )
+dense_design <- make_overlapping_mixture(n_mixtures = 12, n_genotypes = 7, density = 1 )
+medium_density_design <- make_overlapping_mixture(n_mixtures = 12, n_genotypes = 7, density = 0.5 )
+sparse_design <- make_overlapping_mixture(n_mixtures = 12, n_genotypes = 7, density = 0 )
 ```
 
 This is a dense design
@@ -96,10 +96,10 @@ plot_experimental_design(dense_design)
 
 This is a medium design
 ```{r}
-plot_experimental_design(sparse_design)
+plot_experimental_design(medium_density_design)
 ```
 
 This is a sparse design
 ```{r}
-plot_experimental_design(medium_density_design)
+plot_experimental_design(sparse_design)
 ```
