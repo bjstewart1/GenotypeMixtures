@@ -139,10 +139,10 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
   sufficient_counts <- apply(sufficient_counts, 1, all)
   #do this subsetting and calculate the vaf
   gt_1 <- lapply(gt_1, function(x){x <- x[sufficient_counts, ]
-  x <- x[,1]/(x[,1] + x[,2])
+  x <- x[,2]/(x[,1] + x[,2])
   return(x)})
   gt_2 <- lapply(gt_2, function(x){x <- x[sufficient_counts, ]
-  x <- x[,1]/(x[,1] + x[,2])
+  x <- x[,2]/(x[,1] + x[,2])
   return(x)})
 
   #and do a double for loop to calculate the mean squared error
