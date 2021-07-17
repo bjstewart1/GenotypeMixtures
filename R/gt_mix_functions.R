@@ -118,15 +118,19 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
   vcf2 <- vcf2[match(intersect_idx, vcf2_idx), ]
   #now get the genotype calls
   gt_1  <- vcf1@gt
+  AO_idx_gt_1 <- which(strsplit(gt_1[,1], ":")[[1]] == "AO")
+  RO_idx_gt_1 <-  which(strsplit(gt_1[,1], ":")[[1]] == "RO")
   gt_1 <- lapply(2:ncol(gt_1), function(x){
-     gt1_mat <-  do.call(rbind, strsplit(gt_1[,x], ":"))[, c(2:3)]
+     gt1_mat <-  do.call(rbind, strsplit(gt_1[,x], ":"))[, c(AO_idx_gt_1, RO_idx_gt_1)]
      gt1_mat <- apply(gt1_mat, 2, as.numeric)
      return(gt1_mat)
   })
   names(gt_1) <- 0:(length(gt_1)-1)
   gt_2 <- vcf2@gt
+  AO_idx_gt_2 <- which(strsplit(gt_2[,1], ":")[[1]] == "AO")
+  RO_idx_gt_2 <-  which(strsplit(gt_2[,1], ":")[[1]] == "RO")
   gt_2 <- lapply(2:ncol(gt_2), function(x){
-    gt2_mat <-  do.call(rbind, strsplit(gt_2[,x], ":"))[, c(2:3)]
+    gt2_mat <-  do.call(rbind, strsplit(gt_2[,x], ":"))[, c(AO_idx_gt_2, RO_idx_gt_2)]
     gt2_mat <- apply(gt2_mat, 2, as.numeric)
     return(gt2_mat)
   })
@@ -389,15 +393,19 @@ plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_na
   vcf2 <- vcf2[match(intersect_idx, vcf2_idx), ]
   #now get the genotype calls
   gt_1  <- vcf1@gt
+  AO_idx_gt_1 <- which(strsplit(gt_1[,1], ":")[[1]] == "AO")
+  RO_idx_gt_1 <-  which(strsplit(gt_1[,1], ":")[[1]] == "RO")
   gt_1 <- lapply(2:ncol(gt_1), function(x){
-    gt1_mat <-  do.call(rbind, strsplit(gt_1[,x], ":"))[, c(2:3)]
+    gt1_mat <-  do.call(rbind, strsplit(gt_1[,x], ":"))[, c(AO_idx_gt_1, RO_idx_gt_1)]
     gt1_mat <- apply(gt1_mat, 2, as.numeric)
     return(gt1_mat)
   })
   names(gt_1) <- 0:(length(gt_1)-1)
   gt_2 <- vcf2@gt
+  AO_idx_gt_2 <- which(strsplit(gt_2[,1], ":")[[1]] == "AO")
+  RO_idx_gt_2 <-  which(strsplit(gt_2[,1], ":")[[1]] == "RO")
   gt_2 <- lapply(2:ncol(gt_2), function(x){
-    gt2_mat <-  do.call(rbind, strsplit(gt_2[,x], ":"))[, c(2:3)]
+    gt2_mat <-  do.call(rbind, strsplit(gt_2[,x], ":"))[, c(AO_idx_gt_2, RO_idx_gt_2)]
     gt2_mat <- apply(gt2_mat, 2, as.numeric)
     return(gt2_mat)
   })
