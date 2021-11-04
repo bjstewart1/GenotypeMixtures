@@ -179,18 +179,22 @@ shared_genotypes_best_match <- function(experiment_1_path = exp1_path, experimen
     }
   }
   mse_df <- do.call(rbind, mse_list)
-  ggplot(mse_df, aes(x = experiment_1, y = experiment_2, fill =mse)) + geom_tile() + scale_fill_gradientn(colours = rev(viridis::cividis(50)))
 
   #for each cluster join up the best matches under the expectation of a set number of shared genotypes....
   build_edgelist <- list()
   for(g in seq(shared)){
-    selection <-  mse_df[which(mse_df$mse == min(mse_df$mse)), 1:3]
-    build_edgelist[[g]]   <- selection
-    mse_df <- mse_df[!mse_df$experiment_1 %in% selection$experiment_1, ]
-    mse_df <- mse_df[!mse_df$experiment_2 %in% selection$experiment_2, ]
+    if(all(mse_df$mse == 'uncertain')){
+      message("uncertain matching detected")
+    }else{
+      selection <-  mse_df[which(mse_df$mse == min(mse_df$mse)), 1:3]
+      build_edgelist[[g]] <- selection
+      mse_df <- mse_df[!mse_df$experiment_1 %in% selection$experiment_1, ]
+      mse_df <- mse_df[!mse_df$experiment_2 %in% selection$experiment_2, ]
+    }
   }
   df <- do.call(rbind, build_edgelist)
   return(df)
+
 }
 
 #' this is a function that compares genotype calls across two experiments
