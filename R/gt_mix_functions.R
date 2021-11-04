@@ -101,7 +101,8 @@ read_SOC_locations <- function(SOC_locations){
 #' #' shared_genotypes()
 #' }
 #' @export
-shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, experiment_1_name, experiment_2_name ){
+shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, experiment_1_name, experiment_2_name,
+                             ncounts = 10){
   library(vcfR, quietly = TRUE)
   vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
   vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
@@ -139,7 +140,7 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
   #subset to variants that have sufficient counts
   rs_1 <- lapply(gt_1, rowSums)
   rs_2 <- lapply(gt_2, rowSums)
-  sufficient_counts <- apply(do.call(cbind, c(rs_1, rs_2)), 2, function(x){x > 10}) #set sufficient counts as 10
+  sufficient_counts <- apply(do.call(cbind, c(rs_1, rs_2)), 2, function(x){x > ncounts}) #set sufficient counts as 10
   sufficient_counts <- apply(sufficient_counts, 1, all)
   #do this subsetting and calculate the vaf
   gt_1 <- lapply(gt_1, function(x){x <- x[sufficient_counts, ]
@@ -178,7 +179,7 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
 #' construct_genotype_cluster_graph()
 #' }
 #' @export
-construct_genotype_cluster_graph <- function(experimental_design, file_locations){
+construct_genotype_cluster_graph <- function(experimental_design, file_locations, ncounts = 10){
   if(all(file_locations$channel == rownames(experimental_design))){
     message("checking files")
   }else{stop("! the channel column of the locations file does not match the rownames of the experimental design matrix")}
@@ -203,7 +204,7 @@ for(x in rownames(contrasts)){
   #and the number of shared genotypes
   shared_gt = as.integer(selected_contrast[[3]])
   out <- shared_genotypes(experiment_1_path = exp1_path, experiment_2_path = exp2_path, shared = shared_gt,
-                          experiment_1_name = exp1, experiment_2_name = exp2)
+                          experiment_1_name = exp1, experiment_2_name = exp2, ncounts = ncounts)
       #then fill in the values into our graph matrix
     for(p in seq_len(nrow(out))){
       idx_1 <- out[p, 1]
@@ -376,7 +377,7 @@ return(aggregated_clusters)}
 #' cells_to_genotypes()
 #' }
 #' @export
-plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_name, experiment_2_name){
+plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_name, experiment_2_name, ncounts = 10){
   requireNamespace("vcfR")
   vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
   vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
@@ -414,7 +415,7 @@ plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_na
   #subset to variants that have sufficient counts
   rs_1 <- lapply(gt_1, rowSums)
   rs_2 <- lapply(gt_2, rowSums)
-  sufficient_counts <- apply(do.call(cbind, c(rs_1, rs_2)), 2, function(x){x > 10}) #set sufficient counts as 10
+  sufficient_counts <- apply(do.call(cbind, c(rs_1, rs_2)), 2, function(x){x > ncounts}) #set sufficient counts as 10
   sufficient_counts <- apply(sufficient_counts, 1, all)
   #do this subsetting and calculate the vaf
   gt_1 <- do.call(rbind, lapply(names(gt_1), function(i){
