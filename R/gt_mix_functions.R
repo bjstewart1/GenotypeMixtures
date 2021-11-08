@@ -111,13 +111,18 @@ shared_genotypes_best_match <- function(experiment_1_path = exp1_path, experimen
   requireNamespace("vcfR")
   vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
   vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
-  vcf1 =  vcfR::read.vcfR(file.path(experiment_1_path, "cluster_genotypes.vcf"),
-                          verbose = FALSE)
-  vcf2 =  vcfR::read.vcfR(file.path(experiment_2_path, "cluster_genotypes.vcf"),
-                          verbose = FALSE)
-  #get intersection of fix - here we just use
-  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[,2 ], "_", vcf1@fix[,4], "_", vcf1@fix[, 5])
-  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[,2 ], "_", vcf2@fix[,4], "_", vcf2@fix[, 5])
+  vcf1 = vcfR::read.vcfR(vcf1_path,
+                         verbose = FALSE)
+  vcf2 = vcfR::read.vcfR(vcf2_path,
+                         verbose = FALSE)
+  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
+                     vcf1@fix[, 4], "_", vcf1@fix[, 5])
+  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
+                     vcf2@fix[, 4], "_", vcf2@fix[, 5])
+  #strip the chr if it is there
+  vcf1_idx <- gsub("chr", "", vcf1_idx)
+  vcf2_idx <- gsub("chr", "", vcf2_idx)
+  #get the intersect
   intersect_idx <-  intersect(vcf1_idx, vcf2_idx)
   #subset vcfs to intersect of fix
   vcf1 <- vcf1[match(intersect_idx, vcf1_idx), ]
@@ -213,13 +218,21 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
   library(vcfR, quietly = TRUE)
   vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
   vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
-  vcf1 =  read.vcfR(file.path(experiment_1_path, "cluster_genotypes.vcf"),
-                          verbose = FALSE)
-  vcf2 =  read.vcfR(file.path(experiment_2_path, "cluster_genotypes.vcf"),
-                          verbose = FALSE)
-  #get intersection of fix - here we just use
-  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[,2 ], "_", vcf1@fix[,4], "_", vcf1@fix[, 5])
-  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[,2 ], "_", vcf2@fix[,4], "_", vcf2@fix[, 5])
+  requireNamespace("vcfR")
+  vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
+  vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
+  vcf1 = vcfR::read.vcfR(vcf1_path,
+                         verbose = FALSE)
+  vcf2 = vcfR::read.vcfR(vcf2_path,
+                         verbose = FALSE)
+  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
+                     vcf1@fix[, 4], "_", vcf1@fix[, 5])
+  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
+                     vcf2@fix[, 4], "_", vcf2@fix[, 5])
+  #strip the chr if it is there
+  vcf1_idx <- gsub("chr", "", vcf1_idx)
+  vcf2_idx <- gsub("chr", "", vcf2_idx)
+  #get the intersect
   intersect_idx <-  intersect(vcf1_idx, vcf2_idx)
   #subset vcfs to intersect of fix
   vcf1 <- vcf1[match(intersect_idx, vcf1_idx), ]
@@ -497,13 +510,18 @@ plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_na
   requireNamespace("vcfR")
   vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
   vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
-  vcf1 =  vcfR::read.vcfR(file.path(experiment_1_path, "cluster_genotypes.vcf"),
-                          verbose = FALSE)
-  vcf2 =  vcfR::read.vcfR(file.path(experiment_2_path, "cluster_genotypes.vcf"),
-                          verbose = FALSE)
-  #get intersection of fix - here we just use
-  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[,2 ], "_", vcf1@fix[,4], "_", vcf1@fix[, 5])
-  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[,2 ], "_", vcf2@fix[,4], "_", vcf2@fix[, 5])
+  vcf1 = vcfR::read.vcfR(vcf1_path,
+                         verbose = FALSE)
+  vcf2 = vcfR::read.vcfR(vcf2_path,
+                         verbose = FALSE)
+  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
+                     vcf1@fix[, 4], "_", vcf1@fix[, 5])
+  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
+                     vcf2@fix[, 4], "_", vcf2@fix[, 5])
+  #strip the chr if it is there
+  vcf1_idx <- gsub("chr", "", vcf1_idx)
+  vcf2_idx <- gsub("chr", "", vcf2_idx)
+  #get the intersect
   intersect_idx <-  intersect(vcf1_idx, vcf2_idx)
   #subset vcfs to intersect of fix
   vcf1 <- vcf1[match(intersect_idx, vcf1_idx), ]
