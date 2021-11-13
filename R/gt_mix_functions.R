@@ -90,115 +90,6 @@ read_SOC_locations <- function(SOC_locations){
 
 
 
-
-
-#' this is a function that compares genotype calls across two experiments and where there is insufficient information to support matching makes a best guess.
-#' @param experiment_1_path the file path to the first souporcell directory
-#' @param experiment_2_path the file path to the second souporcell directory
-#' @param experiment_1_name the name of experiment 1
-#' @param experiment_2_name the name of experiment 2
-#' @param shared numeric- the number of shared genotypes between the experiments
-#' @param ncounts numeric - the number of counts supporting each variant
-#' @return a data frame of the shared genotype clusters between the two experiments
-#' @import vcfR
-#' @examples
-#' \donttest{
-#' #' shared_genotypes()
-#' }
-#' @export
-shared_genotypes_best_match <- function(experiment_1_path = exp1_path, experiment_2_path = exp2_path, shared = shared_gt,
-                                        experiment_1_name = exp1, experiment_2_name = exp2, ncounts = 5){
-  requireNamespace("vcfR")
-  vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
-  vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
-  vcf1 = vcfR::read.vcfR(vcf1_path,
-                         verbose = FALSE)
-  vcf2 = vcfR::read.vcfR(vcf2_path,
-                         verbose = FALSE)
-  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
-                     vcf1@fix[, 4], "_", vcf1@fix[, 5])
-  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
-                     vcf2@fix[, 4], "_", vcf2@fix[, 5])
-  #strip the chr if it is there
-  vcf1_idx <- gsub("chr", "", vcf1_idx)
-  vcf2_idx <- gsub("chr", "", vcf2_idx)
-  #get the intersect
-  intersect_idx <-  intersect(vcf1_idx, vcf2_idx)
-  #subset vcfs to intersect of fix
-  vcf1 <- vcf1[match(intersect_idx, vcf1_idx), ]
-  vcf2 <- vcf2[match(intersect_idx, vcf2_idx), ]
-  #now get the genotype calls
-  gt_1  <- vcf1@gt
-  AO_idx_gt_1 <- which(strsplit(gt_1[,1], ":")[[1]] == "AO")
-  RO_idx_gt_1 <-  which(strsplit(gt_1[,1], ":")[[1]] == "RO")
-  gt_1 <- lapply(2:ncol(gt_1), function(x){
-    gt1_mat <-  do.call(rbind, strsplit(gt_1[,x], ":"))[, c(AO_idx_gt_1, RO_idx_gt_1)]
-    gt1_mat <- apply(gt1_mat, 2, as.numeric)
-    return(gt1_mat)
-  })
-  names(gt_1) <- 0:(length(gt_1)-1)
-  gt_2 <- vcf2@gt
-  AO_idx_gt_2 <- which(strsplit(gt_2[,1], ":")[[1]] == "AO")
-  RO_idx_gt_2 <-  which(strsplit(gt_2[,1], ":")[[1]] == "RO")
-  gt_2 <- lapply(2:ncol(gt_2), function(x){
-    gt2_mat <-  do.call(rbind, strsplit(gt_2[,x], ":"))[, c(AO_idx_gt_2, RO_idx_gt_2)]
-    gt2_mat <- apply(gt2_mat, 2, as.numeric)
-    return(gt2_mat)
-  })
-  names(gt_2) <- 0:(length(gt_2)-1)
-
-  #now for each comparison we select variants that are found in both
-  mse_list <- list()
-  p=1
-  for(i in names(gt_1)){
-    for(j in names(gt_2)){
-      vaf1 <- gt_1[[i]]
-      vaf2 <- gt_2[[j]]
-      rs_1 <- rowSums(vaf1)
-      rs_2 <-  rowSums(vaf2)
-      sufficient_counts <- apply(cbind(rs_1, rs_2), 2, function(x){x > ncounts}) #set sufficient counts as 10
-      sufficient_counts <- apply(sufficient_counts, 1, all)
-
-      if(sum(sufficient_counts) < 20){
-        #here if there is not enough information to go on - for example a very small cluster, then we just have to make a best guess
-        out_df <- data.frame("experiment_1" = paste0(experiment_1_name, "_", i), "experiment_2" = paste0(experiment_2_name, "_", j),
-                             'mse' = 'uncertain')
-        mse_list[[p]] <- out_df
-      }else{
-
-        #get vaf for i
-        vaf1 <- vaf1[sufficient_counts, ]
-        vaf1 <- vaf1[,2]/(vaf1[,1] + vaf1[,2])
-        vaf1 <- data.frame("VAF" = vaf1, "genotype" = paste0(experiment_1_name, "_", i), "channel" = experiment_1_name)
-        #get vaf for j
-        vaf2 <- vaf2[sufficient_counts, ]
-        vaf2 <- vaf2[,2]/(vaf2[,1] + vaf2[,2])
-        vaf2 <- data.frame("VAF" = vaf2, "genotype" = paste0(experiment_2_name, "_", j), "channel" = experiment_2_name)
-        mean_squared_error <- mean((vaf1$VAF-vaf2$VAF)^2)
-        out_df <- data.frame("experiment_1" = paste0(experiment_1_name, "_", i), "experiment_2" = paste0(experiment_2_name, "_", j),
-                             'mse' = mean_squared_error)
-        mse_list[[p]] <- out_df
-      }
-
-      p = p+1
-    }
-  }
-  mse_df <- do.call(rbind, mse_list)
-
-  #for each cluster join up the best matches under the expectation of a set number of shared genotypes....
-  build_edgelist <- list()
-  for(g in seq(shared)){
-      selection <-  mse_df[which(mse_df$mse == min(mse_df$mse)), 1:3]
-      build_edgelist[[g]] <- selection
-      mse_df <- mse_df[!mse_df$experiment_1 %in% selection$experiment_1, ]
-      mse_df <- mse_df[!mse_df$experiment_2 %in% selection$experiment_2, ]
-
-  }
-  df <- do.call(rbind, build_edgelist)
-  return(df)
-
-}
-
 #' this is a function that compares genotype calls across two experiments
 #' @param experiment_1_path the file path to the first souporcell directory
 #' @param experiment_2_path the file path to the second souporcell directory
@@ -213,18 +104,9 @@ shared_genotypes_best_match <- function(experiment_1_path = exp1_path, experimen
 #' #' shared_genotypes()
 #' }
 #' @export
-shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, experiment_1_name, experiment_2_name,
+shared_genotypes <- function(vcf1, vcf2, shared, experiment_1_name, experiment_2_name,
                              ncounts = 10){
   library(vcfR, quietly = TRUE)
-  vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
-  vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
-  requireNamespace("vcfR")
-  vcf1_path <- file.path(experiment_1_path, "cluster_genotypes.vcf")
-  vcf2_path <- file.path(experiment_2_path, "cluster_genotypes.vcf")
-  vcf1 = vcfR::read.vcfR(vcf1_path,
-                         verbose = FALSE)
-  vcf2 = vcfR::read.vcfR(vcf2_path,
-                         verbose = FALSE)
   vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
                      vcf1@fix[, 4], "_", vcf1@fix[, 5])
   vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
@@ -300,7 +182,7 @@ shared_genotypes <- function(experiment_1_path, experiment_2_path, shared, exper
 #' construct_genotype_cluster_graph()
 #' }
 #' @export
-construct_genotype_cluster_graph <- function(experimental_design, file_locations, ncounts = 10, bestmatch = FALSE){
+construct_genotype_cluster_graph <- function(experimental_design, file_locations, ncounts = 10){
   if(all(file_locations$channel == rownames(experimental_design))){
     message("checking files")
   }else{stop("! the channel column of the locations file does not match the rownames of the experimental design matrix")}
@@ -315,26 +197,30 @@ construct_genotype_cluster_graph <- function(experimental_design, file_locations
    graph_matrix <- matrix(0, ncol = length(mat_names), nrow = length(mat_names))
   colnames(graph_matrix) <- rownames(graph_matrix) <- mat_names
   pb <- txtProgressBar(min = 0, max = nrow(contrasts), style = 3)
+
+  #read in the VCF files into a list
+  message("reading in VCF files")
+  library(vcfR, quietly = TRUE)
+  vcf_list <- lapply(file_locations[, 2], function(x){
+    exp_path <- x
+    vcf_path <- file.path(exp_path, "cluster_genotypes.vcf")
+    vcf = vcfR::read.vcfR(vcf_path,
+                          verbose = FALSE)
+    return(vcf)
+  })
+  names(vcf_list) <- file_locations[, 1]
+
 for(x in rownames(contrasts)){
   #get which experiments we want to compare and get their paths
   selected_contrast <- as.list(contrasts[x, ])
-  exp1 = as.character(selected_contrast[[1]])
-  exp1_path <- file_locations[file_locations$channel %in% exp1, 2]
-  exp2 = as.character(selected_contrast[[2]])
-  exp2_path <- file_locations[file_locations$channel %in% exp2, 2]
+  vcf1 = vcf_list[[as.character(selected_contrast$channel_1)]]
+  vcf2 = vcf_list[[as.character(selected_contrast$channel_2)]]
   #and the number of shared genotypes
-  shared_gt = as.integer(selected_contrast[[3]])
-  if(bestmatch){
-    out <- shared_genotypes_best_match(experiment_1_path = exp1_path, experiment_2_path = exp2_path,
-                                       experiment_1_name = exp1,
-                                       experiment_2_name = exp2,
-                                       shared = shared_gt,
-                                       ncounts = ncounts)
-  }else{
-    out <- shared_genotypes(experiment_1_path = exp1_path, experiment_2_path = exp2_path, shared = shared_gt,
-                            experiment_1_name = exp1, experiment_2_name = exp2, ncounts = ncounts)
-  }
-      #then fill in the values into our graph matrix
+  shared_gt = as.integer(selected_contrast$shared)
+  out <- shared_genotypes(vcf1 = vcf1, vcf2 =  vcf2, shared = shared_gt,
+                          experiment_1_name = as.character(selected_contrast$channel_1), experiment_2_name = as.character(selected_contrast$channel_2), ncounts = ncounts)
+
+     #then fill in the values into our graph matrix
     for(p in seq_len(nrow(out))){
       idx_1 <- out[p, 1]
       idx_2 <- out[p, 2]
