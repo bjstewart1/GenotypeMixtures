@@ -333,14 +333,14 @@ for(x in rownames(contrasts)){
   #cluster the graph
   graph_membership <- igraph::cluster_walktrap(gr)$membership
   names(graph_membership) <- igraph::V(gr)$name
-  cluster_colors <- cluster_color_ramp()(length(unique(graph_membership)))
-  names(cluster_colors) <- unique(graph_membership)
+  #cluster_colors <- cluster_color_ramp()(length(unique(graph_membership)))
+  #names(cluster_colors) <- unique(graph_membership)
   requireNamespace('ggraph')
   set.seed(0)
   membership_graph_plot <- ggraph::ggraph(gr, layout = 'fr') + ggraph::geom_edge_link() +
     #geom_node_point(pch = 21, aes(fill = factor(clusters)), size = 5) +
     theme_void() +
-    scale_fill_manual(values = cluster_colors) +
+    #scale_fill_manual(values = cluster_colors) +
     theme(legend.position = 'none') + ggraph::geom_node_label(aes(label = graph_membership, fill = factor(graph_membership)))
 #now get the membership of each of these clusters per channel
   ident_mat <- matrix(0, ncol = length(ch_use), nrow = length(unique(graph_membership)))
