@@ -182,7 +182,7 @@ shared_genotypes <- function(vcf1, vcf2, shared, experiment_1_name, experiment_2
 #' @import vcfR
 #' @examples
 #' \donttest{
-#' #' shared_genotypes()
+#' #' shared_genotypes_relatedness()
 #' }
 #' @export
 
