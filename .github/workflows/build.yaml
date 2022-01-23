@@ -26,9 +26,9 @@ jobs:
       max-parallel: 5
       matrix:
         config:
-          - { r-version: 4.0, os: ubuntu-latest }
+        #  - { r-version: 4.0, os: ubuntu-latest }
           - { r-version: 4.1, os: ubuntu-latest }
-          - { r-version: 4.0, os: macos-latest }
+         # - { r-version: 4.0, os: macos-latest }
           - { r-version: 4.1, os: macos-latest }
     runs-on: ${{ matrix.config.os }}
     env:
@@ -66,7 +66,7 @@ jobs:
         if: matrix.config.os == 'ubuntu-latest'
         run: |
           sudo apt-get install libcurl4-openssl-dev
-          sysreqs=$(Rscript -e 'cat("apt-get update -y && apt-get install -y", paste(gsub("apt-get install -y ", "", remotes::system_requirements("ubuntu", "20.04", package = c("reshape2", "ggplot2", "igraph", "ggraph", "grDevices", "vcfR", "knitr", "rmarkdown", "markdown", "pbapply"))), collapse = " "))')
+          sysreqs=$(Rscript -e 'cat("apt-get update -y && apt-get install -y", paste(gsub("apt-get install -y ", "", remotes::system_requirements("ubuntu", "20.04", package = c("reshape2", "ggplot2", "igraph", "ggraph", "vcfR", "knitr", "rmarkdown", "markdown", "pbapply"))), collapse = " "))')
           echo $sysreqs
           sudo -s eval "$sysreqs"
       - name: Install macOS system dependencies
