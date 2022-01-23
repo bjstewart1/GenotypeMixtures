@@ -178,7 +178,7 @@ shared_genotypes <- function(vcf1, vcf2, shared, experiment_1_name, experiment_2
 #' @param experiment_1_name the name of experiment 1
 #' @param experiment_2_name the name of experiment 2
 #' @param shared numeric- the number of shared genotypes between the experiments
-#' @return a data frame of the shared genotype clusters between the two experiments
+#' @return a data frame of the shared genotype clusters between the two experiments, returning the relatedness score.
 #' @import vcfR
 #' @examples
 #' \donttest{
