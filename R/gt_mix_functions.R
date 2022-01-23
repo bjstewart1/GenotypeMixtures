@@ -91,8 +91,8 @@ read_SOC_locations <- function(SOC_locations){
 
 
 #' this is a function that compares genotype calls across two experiments
-#' @param experiment_1_path the file path to the first souporcell directory
-#' @param experiment_2_path the file path to the second souporcell directory
+#' @param vcf1 the first vcf
+#' @param vcf2 the second vcf
 #' @param experiment_1_name the name of experiment 1
 #' @param experiment_2_name the name of experiment 2
 #' @param shared numeric- the number of shared genotypes between the experiments
@@ -171,9 +171,100 @@ shared_genotypes <- function(vcf1, vcf2, shared, experiment_1_name, experiment_2
   return(df)
 }
 
+
+#' this is a function that compares genotype calls across two experiments and calculates a "relatedness" score as a reimplementation of the Somalier approach Pedersen et al. 2020 (10.1186/s13073-020-00761-2)
+#' @param vcf1 the first vcf
+#' @param vcf2 the second vcf
+#' @param experiment_1_name the name of experiment 1
+#' @param experiment_2_name the name of experiment 2
+#' @param shared numeric- the number of shared genotypes between the experiments
+#' @return a data frame of the shared genotype clusters between the two experiments
+#' @import vcfR
+#' @examples
+#' \donttest{
+#' #' shared_genotypes()
+#' }
+#' @export
+
+#make a function for this this will be "shared genotypes relatedness"
+shared_genotypes_relatedness = function(vcf1, vcf2, shared, experiment_1_name, experiment_2_name){
+    vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
+                     vcf1@fix[, 4], "_", vcf1@fix[, 5])
+      vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
+                     vcf2@fix[, 4], "_", vcf2@fix[, 5])
+  #strip the chr if it is there
+      vcf1_idx <- gsub("chr", "", vcf1_idx)
+      vcf2_idx <- gsub("chr", "", vcf2_idx)
+
+    gt_1  <- vcf1@gt
+names(gt_1) = vcf1_idx
+  GT_idx_gt_1 <- which(strsplit(gt_1[,1], ":")[[1]] == "GT")
+  gt_1 <- lapply(2:ncol(gt_1), function(x){
+     gt1_mat <-  do.call(rbind, strsplit(gt_1[,x], ":"))[, GT_idx_gt_1]
+        gt1_mat = data.frame("GT" = gt1_mat, row.names = vcf1_idx)
+     return(gt1_mat)
+  })
+  names(gt_1) <- 0:(length(gt_1)-1)
+gt_2  <- vcf2@gt
+names(gt_2) = vcf2_idx
+  GT_idx_gt_2 <- which(strsplit(gt_2[,1], ":")[[1]] == "GT")
+  gt_2 <- lapply(2:ncol(gt_2), function(x){
+     gt2_mat <-  do.call(rbind, strsplit(gt_2[,x], ":"))[, GT_idx_gt_2]
+        gt2_mat = data.frame("GT" = gt2_mat, row.names = vcf2_idx)
+     return(gt2_mat)
+  })
+  names(gt_2) <- 0:(length(gt_2)-1)
+
+    df_list = list()
+    p = 1
+    for(i in names(gt_1)){
+        for(j in names(gt_2)){
+            samp1 = gt_1[[i]]$GT
+            names(samp1) = rownames(gt_1[[i]])
+            samp2 = gt_2[[j]]$GT
+            names(samp2) = rownames(gt_2[[j]])
+            samp1_hets = names(samp1)[samp1 == "0/1"]
+            samp2_hets = names(samp2)[samp2 == "0/1"]
+            samp1_refhom = names(samp1)[samp1 == "0/0"]
+            samp2_refhom = names(samp2)[samp2 == "0/0"]
+            samp1_althom = names(samp1)[samp1 == "1/1"]
+            samp2_althom = names(samp2)[samp2 == "1/1"]
+
+            #IBS0 - number of sites where one sample is hom-ref and the other is hom-alt
+            IBS0 = length(intersect(samp1_althom, samp2_refhom)) + length(intersect(samp2_althom, samp1_refhom))
+
+            #IBS2 - number both homozygous or both heterozygous
+            IBS2 = length(intersect(samp1_hets, samp2_hets)) + length(intersect(samp1_refhom, samp2_refhom)) + + length(intersect(samp1_althom, samp2_althom))
+   
+        
+            #sharedhets - number of sites where both are heterozygotes
+            sharedhets = length(intersect(samp1_hets, samp2_hets))
+
+            #hets in common positions
+            shared_positions = intersect(names(samp1)[!samp1 %in% "./."], names(samp2)[!samp2 %in% "./."])
+            HetIC_samp1 = sum(samp1_hets %in% shared_positions)
+            HetIC_samp2 = sum(samp2_hets %in% shared_positions)
+
+            relatedness = (sharedhets - 2*IBS0) / min(HetIC_samp1, HetIC_samp2)
+
+            df_list[[p]] = data.frame("experiment_1" = paste0(experiment_1_name, "_", i), "experiment_2" = paste0(experiment_2_name, "_", j), "relatedness" = relatedness, "IBS0" = IBS0, "IBS2" =  IBS2 ,"shared_hets" = sharedhets)
+            p = p+1
+}}
+        df = do.call(rbind, df_list)
+        df = df[order(df$relatedness, decreasing = TRUE), ]
+    df = df[1:shared, ]
+    return(df)
+    }
+
+
+
+
+
+
 #' this is a big function that constructs a genotype cluster graph using a set of SOC directories and an experimental design
 #' @param experimental_design an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes
 #' @param file_locations the file locations
+#' @param use_VAF if TRUE calculates genotype to genotype similarity on the basis of mean squared error between variant allele frequencies, if FALSE calculates relatedness (Pedersen et al. 2020) using a reimplementation of the Somalier approach.
 #' @return a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships
 #' @import igraph ggraph utils ggplot2
 #' @param ncounts numeric - the number of counts supporting each variant
@@ -182,7 +273,7 @@ shared_genotypes <- function(vcf1, vcf2, shared, experiment_1_name, experiment_2
 #' construct_genotype_cluster_graph()
 #' }
 #' @export
-construct_genotype_cluster_graph <- function(experimental_design, file_locations, ncounts = 10){
+construct_genotype_cluster_graph <- function(experimental_design, file_locations, ncounts = 10, use_VAF = TRUE){
   if(all(file_locations$channel == rownames(experimental_design))){
     message("checking files")
   }else{stop("! the channel column of the locations file does not match the rownames of the experimental design matrix")}
@@ -217,8 +308,13 @@ for(x in rownames(contrasts)){
   vcf2 = vcf_list[[as.character(selected_contrast$channel_2)]]
   #and the number of shared genotypes
   shared_gt = as.integer(selected_contrast$shared)
+    if(use_VAF){
   out <- shared_genotypes(vcf1 = vcf1, vcf2 =  vcf2, shared = shared_gt,
                           experiment_1_name = as.character(selected_contrast$channel_1), experiment_2_name = as.character(selected_contrast$channel_2), ncounts = ncounts)
+    }else{
+        out = shared_genotypes_relatedness(vcf1 = vcf1, vcf2 =  vcf2, shared = shared_gt,
+                          experiment_1_name = as.character(selected_contrast$channel_1), experiment_2_name = as.character(selected_contrast$channel_2))
+    }
 
      #then fill in the values into our graph matrix
     for(p in seq_len(nrow(out))){
