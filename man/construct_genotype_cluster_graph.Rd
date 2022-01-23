@@ -4,12 +4,21 @@
 \alias{construct_genotype_cluster_graph}
 \title{this is a big function that constructs a genotype cluster graph using a set of SOC directories and an experimental design}
 \usage{
-construct_genotype_cluster_graph(experimental_design, file_locations)
+construct_genotype_cluster_graph(
+  experimental_design,
+  file_locations,
+  ncounts = 10,
+  use_VAF = TRUE
+)
 }
 \arguments{
 \item{experimental_design}{an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes}
 
 \item{file_locations}{the file locations}
+
+\item{ncounts}{numeric - the number of counts supporting each variant}
+
+\item{use_VAF}{if TRUE calculates genotype to genotype similarity on the basis of mean squared error between variant allele frequencies, if FALSE calculates relatedness (Pedersen et al. 2020) using a reimplementation of the Somalier approach.}
 }
 \value{
 a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships

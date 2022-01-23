@@ -8,7 +8,8 @@ plot_cross_vaf(
   experiment_1_path,
   experiment_2_path,
   experiment_1_name,
-  experiment_2_name
+  experiment_2_name,
+  ncounts = 10
 )
 }
 \arguments{

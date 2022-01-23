@@ -5,23 +5,26 @@
 \title{this is a function that compares genotype calls across two experiments}
 \usage{
 shared_genotypes(
-  experiment_1_path,
-  experiment_2_path,
+  vcf1,
+  vcf2,
   shared,
   experiment_1_name,
-  experiment_2_name
+  experiment_2_name,
+  ncounts = 10
 )
 }
 \arguments{
-\item{experiment_1_path}{the file path to the first souporcell directory}
+\item{vcf1}{the first vcf}
 
-\item{experiment_2_path}{the file path to the second souporcell directory}
+\item{vcf2}{the second vcf}
 
 \item{shared}{numeric- the number of shared genotypes between the experiments}
 
 \item{experiment_1_name}{the name of experiment 1}
 
 \item{experiment_2_name}{the name of experiment 2}
+
+\item{ncounts}{numeric - the number of counts supporting each variant}
 }
 \value{
 a data frame of the shared genotype clusters between the two experiments
