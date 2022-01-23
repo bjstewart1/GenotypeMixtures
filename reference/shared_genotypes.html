@@ -55,26 +55,29 @@
 
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">shared_genotypes</span><span class="op">(</span>
-  <span class="va">experiment_1_path</span>,
-  <span class="va">experiment_2_path</span>,
+  <span class="va">vcf1</span>,
+  <span class="va">vcf2</span>,
   <span class="va">shared</span>,
   <span class="va">experiment_1_name</span>,
-  <span class="va">experiment_2_name</span>
+  <span class="va">experiment_2_name</span>,
+  ncounts <span class="op">=</span> <span class="fl">10</span>
 <span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>experiment_1_path</dt>
-<dd><p>the file path to the first souporcell directory</p></dd>
-<dt>experiment_2_path</dt>
-<dd><p>the file path to the second souporcell directory</p></dd>
+    <dl><dt>vcf1</dt>
+<dd><p>the first vcf</p></dd>
+<dt>vcf2</dt>
+<dd><p>the second vcf</p></dd>
 <dt>shared</dt>
 <dd><p>numeric- the number of shared genotypes between the experiments</p></dd>
 <dt>experiment_1_name</dt>
 <dd><p>the name of experiment 1</p></dd>
 <dt>experiment_2_name</dt>
 <dd><p>the name of experiment 2</p></dd>
+<dt>ncounts</dt>
+<dd><p>numeric - the number of counts supporting each variant</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>

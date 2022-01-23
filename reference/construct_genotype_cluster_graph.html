@@ -54,7 +54,12 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">construct_genotype_cluster_graph</span><span class="op">(</span><span class="va">experimental_design</span>, <span class="va">file_locations</span><span class="op">)</span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="fu">construct_genotype_cluster_graph</span><span class="op">(</span>
+  <span class="va">experimental_design</span>,
+  <span class="va">file_locations</span>,
+  ncounts <span class="op">=</span> <span class="fl">10</span>,
+  use_VAF <span class="op">=</span> <span class="cn">TRUE</span>
+<span class="op">)</span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -63,6 +68,10 @@
 <dd><p>an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes</p></dd>
 <dt>file_locations</dt>
 <dd><p>the file locations</p></dd>
+<dt>ncounts</dt>
+<dd><p>numeric - the number of counts supporting each variant</p></dd>
+<dt>use_VAF</dt>
+<dd><p>if TRUE calculates genotype to genotype similarity on the basis of mean squared error between variant allele frequencies, if FALSE calculates relatedness (Pedersen et al. 2020) using a reimplementation of the Somalier approach.</p></dd>
 </dl></div>
     <div id="value">
     <h2>Value</h2>
