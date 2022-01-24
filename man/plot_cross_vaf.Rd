@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{plot_cross_vaf}
 \alias{plot_cross_vaf}
-\title{this is a function that maps the genotype clusters to genotype names}
+\title{plot_cross_vaf}
 \usage{
 plot_cross_vaf(
   experiment_1_path,
@@ -25,7 +25,7 @@ plot_cross_vaf(
 matrix of cells by genotypes
 }
 \description{
-this is a function that maps the genotype clusters to genotype names
+Function that maps the genotype clusters to genotype names
 }
 \examples{
 \donttest{

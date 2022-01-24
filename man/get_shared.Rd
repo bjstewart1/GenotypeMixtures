@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{get_shared}
 \alias{get_shared}
-\title{This is a function to get the number of shared genotypes between channels}
+\title{get_shared}
 \usage{
 get_shared(experimental_design)
 }
@@ -13,7 +13,7 @@ get_shared(experimental_design)
 a matrix of channels and genotypes shared
 }
 \description{
-This is a function to get the number of shared genotypes between channels
+Function to get the number of shared genotypes between channels from an experimental design
 }
 \examples{
 \donttest{

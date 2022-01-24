@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{read_SOC_locations}
 \alias{read_SOC_locations}
-\title{This is a function to read in the locations of Soup Or Cell outputs}
+\title{read_SOC_locations}
 \usage{
 read_SOC_locations(SOC_locations)
 }
@@ -13,7 +13,7 @@ read_SOC_locations(SOC_locations)
 a matrix of SOC file paths and the channel names
 }
 \description{
-This is a function to read in the locations of Soup Or Cell outputs
+Fucntion to read in the locations of souporcell outputs
 }
 \examples{
 \donttest{

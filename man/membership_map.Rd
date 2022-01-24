@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{membership_map}
 \alias{membership_map}
-\title{this is a function that maps channel membership to genotype ID}
+\title{membership_map}
 \usage{
 membership_map(experimental_design, graph_output)
 }
@@ -15,7 +15,7 @@ membership_map(experimental_design, graph_output)
 a matrix of channel memberships for each cluster
 }
 \description{
-this is a function that maps channel membership to genotype ID
+function that maps channel membership to genotype ID
 }
 \examples{
 \donttest{

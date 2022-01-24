@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{cells_to_genotypes}
 \alias{cells_to_genotypes}
-\title{this is a function that maps the genotype clusters to genotype names}
+\title{cells_to_genotypes}
 \usage{
 cells_to_genotypes(SOC_locations, membership_mat)
 }
@@ -15,7 +15,7 @@ cells_to_genotypes(SOC_locations, membership_mat)
 matrix of cells by genotypes
 }
 \description{
-this is a function that maps the genotype clusters to genotype names
+Function that maps the genotype clusters to genotype names
 }
 \examples{
 \donttest{

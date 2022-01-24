@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{check_complete_graph}
 \alias{check_complete_graph}
-\title{this is a big function that checks if the genotype graph is a set of complete subgraphs}
+\title{check_complete_graph}
 \usage{
 check_complete_graph(gr)
 }
@@ -13,7 +13,7 @@ check_complete_graph(gr)
 a message telling you if your graph is a collection of complete subgraphs
 }
 \description{
-this is a big function that checks if the genotype graph is a set of complete subgraphs
+Function that checks if the genotype graph is a set of complete subgraphs
 }
 \examples{
 \donttest{

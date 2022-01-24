@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{shared_genotypes}
 \alias{shared_genotypes}
-\title{this is a function that compares genotype calls across two experiments}
+\title{shared_genotypes}
 \usage{
 shared_genotypes(
   vcf1,
@@ -30,7 +30,7 @@ shared_genotypes(
 a data frame of the shared genotype clusters between the two experiments
 }
 \description{
-this is a function that compares genotype calls across two experiments
+Function that compares genotype calls across two experiments
 }
 \examples{
 \donttest{

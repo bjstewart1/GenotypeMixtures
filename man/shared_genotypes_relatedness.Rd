@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{shared_genotypes_relatedness}
 \alias{shared_genotypes_relatedness}
-\title{this is a function that compares genotype calls across two experiments and calculates a "relatedness" score as a reimplementation of the Somalier approach Pedersen et al. 2020 (10.1186/s13073-020-00761-2)}
+\title{shared_genotypes_relatedness}
 \usage{
 shared_genotypes_relatedness(
   vcf1,
@@ -27,7 +27,7 @@ shared_genotypes_relatedness(
 a data frame of the shared genotype clusters between the two experiments, returning the relatedness score.
 }
 \description{
-this is a function that compares genotype calls across two experiments and calculates a "relatedness" score as a reimplementation of the Somalier approach Pedersen et al. 2020 (10.1186/s13073-020-00761-2)
+Function that compares genotype calls across two experiments and calculates a "relatedness" score as a reimplementation of the Somalier approach Pedersen et al. 2020 (10.1186/s13073-020-00761-2)
 }
 \examples{
 \donttest{

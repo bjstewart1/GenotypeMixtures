@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{construct_genotype_cluster_graph}
 \alias{construct_genotype_cluster_graph}
-\title{this is a big function that constructs a genotype cluster graph using a set of SOC directories and an experimental design}
+\title{construct_genotype_cluster_graph}
 \usage{
 construct_genotype_cluster_graph(
   experimental_design,
@@ -24,7 +24,7 @@ construct_genotype_cluster_graph(
 a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships
 }
 \description{
-this is a big function that constructs a genotype cluster graph using a set of SOC directories and an experimental design
+Function that constructs a genotype cluster graph using a set of SOC directories and an experimental design
 }
 \examples{
 \donttest{

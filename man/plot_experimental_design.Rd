@@ -2,7 +2,7 @@
 % Please edit documentation in R/gt_mix_functions.R
 \name{plot_experimental_design}
 \alias{plot_experimental_design}
-\title{This is a function to plot the experimental design}
+\title{plot_experimental_design}
 \usage{
 plot_experimental_design(experimental_design)
 }
@@ -13,7 +13,7 @@ plot_experimental_design(experimental_design)
 a ggplot experimental design heatmap
 }
 \description{
-This is a function to plot the experimental design
+Function to plot the experimental design
 }
 \examples{
 \donttest{
