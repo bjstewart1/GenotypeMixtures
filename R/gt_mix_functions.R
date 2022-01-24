@@ -1,6 +1,6 @@
 #' @include utilities.R
 
-#' This is a function to read in the experimental design
+#' Function to read in the experimental design
 #' @title read_experimental_design
 #' @param experimental_design_path path to the experimental design .csv file
 #' @return a matrix of the experimental design
@@ -15,7 +15,8 @@ read_experimental_design <- function(experimental_design_path){
   return(edesign)
 }
 
-#' This is a function to plot the experimental design
+#' Function to plot the experimental design
+#' @title plot_experimental_design
 #' @param experimental_design an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes
 #' @import reshape2 ggplot2
 #' @return a ggplot experimental design heatmap
@@ -45,7 +46,8 @@ plot_experimental_design <- function(experimental_design){
   return(pl)
 }
 
-#' This is a function to get the number of shared genotypes between channels
+#' Function to get the number of shared genotypes between channels from an experimental design
+#' @title get_shared
 #' @param experimental_design design matrix rownames should be microfluidics channels, colnames should be genotypes
 #' @return a matrix of channels and genotypes shared
 #' @examples
@@ -74,7 +76,8 @@ get_shared <- function(experimental_design){
 return(mat)
 }
 
-#' This is a function to read in the locations of Soup Or Cell outputs
+#' Fucntion to read in the locations of souporcell outputs
+#' @title read_SOC_locations
 #' @param SOC_locations path to the .csv file giving channel names as the first column and file paths to the souporcell output in the second column
 #' @return a matrix of SOC file paths and the channel names
 #' @examples
@@ -90,7 +93,8 @@ read_SOC_locations <- function(SOC_locations){
 
 
 
-#' this is a function that compares genotype calls across two experiments
+#' Function that compares genotype calls across two experiments
+#' @title shared_genotypes
 #' @param vcf1 the first vcf
 #' @param vcf2 the second vcf
 #' @param experiment_1_name the name of experiment 1
@@ -172,7 +176,8 @@ shared_genotypes <- function(vcf1, vcf2, shared, experiment_1_name, experiment_2
 }
 
 
-#' this is a function that compares genotype calls across two experiments and calculates a "relatedness" score as a reimplementation of the Somalier approach Pedersen et al. 2020 (10.1186/s13073-020-00761-2)
+#' Function that compares genotype calls across two experiments and calculates a "relatedness" score as a reimplementation of the Somalier approach Pedersen et al. 2020 (10.1186/s13073-020-00761-2)
+#' @title shared_genotypes_relatedness
 #' @param vcf1 the first vcf
 #' @param vcf2 the second vcf
 #' @param experiment_1_name the name of experiment 1
@@ -256,12 +261,8 @@ names(gt_2) = vcf2_idx
     return(df)
     }
 
-
-
-
-
-
-#' this is a big function that constructs a genotype cluster graph using a set of SOC directories and an experimental design
+#' Function that constructs a genotype cluster graph using a set of SOC directories and an experimental design
+#' @title construct_genotype_cluster_graph
 #' @param experimental_design an experimental design matrix rownames should be microfluidics channels, colnames should be genotypes
 #' @param file_locations the file locations
 #' @param use_VAF if TRUE calculates genotype to genotype similarity on the basis of mean squared error between variant allele frequencies, if FALSE calculates relatedness (Pedersen et al. 2020) using a reimplementation of the Somalier approach.
@@ -386,7 +387,9 @@ if(all(subgraph_checks)){
               "membership_plot" = membership_plot,
               "membership_matrix" = ident_mat))
 }
-#' this is a big function that checks if the genotype graph is a set of complete subgraphs
+
+#' Function that checks if the genotype graph is a set of complete subgraphs
+#' @title check_complete_graph
 #' @param gr an igraph object
 #' @return a message telling you if your graph is a collection of complete subgraphs
 #' @import igraph
@@ -401,7 +404,8 @@ check_complete_graph <- function(gr){
   measured_edges <- igraph::ecount(gr)
   return(expected_edges == measured_edges)
 }
-#' this is a function that maps channel membership to genotype ID
+#' function that maps channel membership to genotype ID
+#' @title membership_map
 #' @param experimental_design design matrix rownames should be microfluidics channels, colnames should be genotypes
 #' @param graph_output the output of construct_genotype_cluster_graph given as x$genotype_cluster_graph
 #' @return a matrix of channel memberships for each cluster
@@ -434,7 +438,8 @@ membership_map <- function(experimental_design, graph_output){
   }
 return(cluster_mapping)
 }
-#' this is a function that maps the genotype clusters to genotype names
+#' Function that maps the genotype clusters to genotype names
+#' @title cells_to_genotypes
 #' @export
 #' @param SOC_locations the locations file
 #' @param membership_mat output of membership_map()
@@ -476,7 +481,8 @@ return(clusters)
 }))
 return(aggregated_clusters)}
 
-#' this is a function that maps the genotype clusters to genotype names
+#' Function that maps the genotype clusters to genotype names
+#' @title plot_cross_vaf
 #' @param experiment_1_path the SOC directory for the first experiment
 #' @param experiment_2_path the SOC directory for the second experiment
 #' @param experiment_1_name the name of the first experiment
@@ -568,7 +574,8 @@ plot_cross_vaf <- function(experiment_1_path, experiment_2_path, experiment_1_na
   return(pl)
 }
 
-#' this is a function produces an experimental design with varying degrees of sparsity.
+#' Function produces an experimental design with varying degrees of sparsity.
+#' @title make_overlapping_mixture
 #' @param n_mixtures the number of mixtures to include
 #' @param n_genotypes the number of genotypes to include
 #' @param density the density of the design - numeric value from 0->1
