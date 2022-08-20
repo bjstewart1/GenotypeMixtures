@@ -111,18 +111,22 @@ read_SOC_locations <- function(SOC_locations){
 shared_genotypes <- function(vcf1, vcf2, shared, experiment_1_name, experiment_2_name,
                              ncounts = 10){
   library(vcfR, quietly = TRUE)
-  vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
+  rownames(vcf1@fix) <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
                      vcf1@fix[, 4], "_", vcf1@fix[, 5])
-  vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
+    
+  rownames(vcf2@fix) <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
                      vcf2@fix[, 4], "_", vcf2@fix[, 5])
+    vcf1 = vcf1[!duplicated(  rownames(vcf1@fix) ), ]
+    vcf2 = vcf2[!duplicated(  rownames(vcf2@fix) ), ]
+
   #strip the chr if it is there
-  vcf1_idx <- gsub("chr", "", vcf1_idx)
-  vcf2_idx <- gsub("chr", "", vcf2_idx)
+  rownames(vcf1@fix) <- gsub("chr", "", rownames(vcf1@fix))
+  rownames(vcf2@fix) <- gsub("chr", "", rownames(vcf2@fix))
   #get the intersect
-  intersect_idx <-  intersect(vcf1_idx, vcf2_idx)
+  intersect_idx <-  intersect(rownames(vcf1@fix), rownames(vcf2@fix))
   #subset vcfs to intersect of fix
-  vcf1 <- vcf1[match(intersect_idx, vcf1_idx), ]
-  vcf2 <- vcf2[match(intersect_idx, vcf2_idx), ]
+  vcf1 <- vcf1[match(intersect_idx, rownames(vcf1@fix)), ]
+  vcf2 <- vcf2[match(intersect_idx,  rownames(vcf2@fix)), ]
   #now get the genotype calls
   gt_1  <- vcf1@gt
   AO_idx_gt_1 <- which(strsplit(gt_1[,1], ":")[[1]] == "AO")
@@ -193,29 +197,39 @@ shared_genotypes <- function(vcf1, vcf2, shared, experiment_1_name, experiment_2
 
 #make a function for this this will be "shared genotypes relatedness"
 shared_genotypes_relatedness = function(vcf1, vcf2, shared, experiment_1_name, experiment_2_name){
-    vcf1_idx <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
+  library(vcfR, quietly = TRUE)
+  rownames(vcf1@fix) <- paste0(vcf1@fix[, 1], "_", vcf1@fix[, 2], "_",
                      vcf1@fix[, 4], "_", vcf1@fix[, 5])
-      vcf2_idx <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
+    
+  rownames(vcf2@fix) <- paste0(vcf2@fix[, 1], "_", vcf2@fix[, 2], "_",
                      vcf2@fix[, 4], "_", vcf2@fix[, 5])
+    vcf1 = vcf1[!duplicated(  rownames(vcf1@fix) ), ]
+    vcf2 = vcf2[!duplicated(  rownames(vcf2@fix) ), ]
+
   #strip the chr if it is there
-      vcf1_idx <- gsub("chr", "", vcf1_idx)
-      vcf2_idx <- gsub("chr", "", vcf2_idx)
+  rownames(vcf1@fix) <- gsub("chr", "", rownames(vcf1@fix))
+  rownames(vcf2@fix) <- gsub("chr", "", rownames(vcf2@fix))
+  #get the intersect
+  intersect_idx <-  intersect(rownames(vcf1@fix), rownames(vcf2@fix))
+  #subset vcfs to intersect of fix
+  vcf1 <- vcf1[match(intersect_idx, rownames(vcf1@fix)), ]
+  vcf2 <- vcf2[match(intersect_idx,  rownames(vcf2@fix)), ]
 
     gt_1  <- vcf1@gt
-names(gt_1) = vcf1_idx
+names(gt_1) = rownames(vcf1@fix)
   GT_idx_gt_1 <- which(strsplit(gt_1[,1], ":")[[1]] == "GT")
   gt_1 <- lapply(2:ncol(gt_1), function(x){
      gt1_mat <-  do.call(rbind, strsplit(gt_1[,x], ":"))[, GT_idx_gt_1]
-        gt1_mat = data.frame("GT" = gt1_mat, row.names = vcf1_idx)
+        gt1_mat = data.frame("GT" = gt1_mat, row.names = rownames(vcf1@fix))
      return(gt1_mat)
   })
   names(gt_1) <- 0:(length(gt_1)-1)
 gt_2  <- vcf2@gt
-names(gt_2) = vcf2_idx
+names(gt_2) = rownames(vcf2@fix)
   GT_idx_gt_2 <- which(strsplit(gt_2[,1], ":")[[1]] == "GT")
   gt_2 <- lapply(2:ncol(gt_2), function(x){
      gt2_mat <-  do.call(rbind, strsplit(gt_2[,x], ":"))[, GT_idx_gt_2]
-        gt2_mat = data.frame("GT" = gt2_mat, row.names = vcf2_idx)
+        gt2_mat = data.frame("GT" = gt2_mat, row.names = rownames(vcf2@fix))
      return(gt2_mat)
   })
   names(gt_2) <- 0:(length(gt_2)-1)
@@ -628,3 +642,150 @@ make_overlapping_mixture <- function (n_mixtures, n_genotypes, density = 1) {
   }
 }
 
+#' Function that clusters genotypes into donors in an unsupervised manner (i.e. does not require the experimental design). This is useful if there is some doubt about the experimental design, or if one is not available.
+#' @param file_locations the file locations
+#' @param use_VAF if TRUE calculates genotype to genotype similarity on the basis of mean squared error between variant allele frequencies, if FALSE calculates relatedness (Pedersen et al. 2020) using a reimplementation of the Somalier approach.
+#' @return a list $graph_membership gives you cluster memberships $graph_plot gives a force directed embedding of the graph $membership_plot gives a heatmap of memberships $membership_matrix gives a matrix of channel memberships, $histogram gives a histogram of relatedness values used to cluster links into donors/generate a graph.
+#' @import igraph ggraph utils ggplot2
+#' @param ncounts numeric - the number of counts supporting each variant
+#' @examples
+#' \donttest{
+#' construct_genotype_cluster_graph()
+#' }
+#' @export
+
+construct_genotype_cluster_graph_unsupervised <- function(file_locations, ncounts = 10, use_VAF = TRUE){
+
+#read in the VCF files into a list
+  message("reading in VCF files")
+  library(vcfR, quietly = TRUE)
+  vcf_list <- lapply(file_locations[, 2], function(x){
+    exp_path <- x
+    vcf_path <- file.path(exp_path, "cluster_genotypes.vcf")
+    vcf = vcfR::read.vcfR(vcf_path,
+                          verbose = FALSE)
+    return(vcf)
+  })
+  names(vcf_list) <- file_locations[, 1]
+
+#create the graph matrix
+     
+ch_use <- names(vcf_list)
+mat_names = unlist(lapply(ch_use, function(x){
+    vcf_use = vcf_list[[x]]
+    paste0(x, "_", colnames(vcf_use@gt[, 2:ncol(vcf_use@gt)]))
+}))
+graph_matrix <- matrix(0, ncol = length(mat_names), nrow = length(mat_names))
+colnames(graph_matrix) <- rownames(graph_matrix) <- mat_names
+
+#now get all the unique combinations between vcfs
+combs = t(combn(names(vcf_list),2))
+
+#for every combination we find what is shared and what is not.
+contrast_list = lapply(1:nrow(combs), function(x){
+    e1 = combs[x, 1]
+    e2 = combs[x, 2]
+        vcf1 =   vcf_list[[e1]]
+        vcf2 = vcf_list[[e2]]
+       shared_gt = 500 #set this at a ridiculous value
+        if(use_VAF){
+contr = shared_genotypes(vcf1 = vcf1, vcf2 =  vcf2, shared = shared_gt,
+                          experiment_1_name =e1, experiment_2_name = e2, ncounts = ncounts)
+contr   = contr[!is.na(contr[,1]), ] 
+    }else{
+contr = shared_genotypes_relatedness(vcf1 = vcf1, vcf2 =  vcf2, shared = shared_gt,
+                          experiment_1_name =e1, experiment_2_name = e2)
+contr   = contr[!is.na(contr[,1]), ] 
+    }    
+return(contr)
+})
+out = do.call(rbind, contrast_list)
+  
+if(use_VAF){
+    km <- kmeans(out$mse, centers = 2)
+    cluster_get = which(km[[2]] == min(km[[2]])) #lower is more
+    link_hist = ggplot(out, aes(x = mse, fill = km[[1]] %in% cluster_get)) + geom_histogram(bins = 100) + theme_minimal() + 
+     theme(legend.position="none") + scale_fill_manual(values = c("TRUE" = 'darkblue', "FALSE" = 'grey50')) 
+    #hist(out$mse, breaks = 100)
+    linked_genotypes = out[km[[1]] == cluster_get, ]
+    }else{
+        km <- kmeans(out$relatedness, centers = 2)
+    cluster_get = which(km[[2]] == max(km[[2]])) #higher is more
+    link_hist = ggplot(out, aes(x = relatedness, fill = km[[1]] %in% cluster_get)) + geom_histogram(bins = 100)  + theme_minimal() +  
+     theme(legend.position="none") + scale_fill_manual(values = c("TRUE" = 'darkblue', "FALSE" = 'grey50'))
+    #hist(out$relatedness, breaks = 100)
+    linked_genotypes = out[km[[1]] == cluster_get, ]
+    }
+
+#fill in the graph matrix  
+ for(i in 1:nrow(linked_genotypes)){
+   gt1 = linked_genotypes[i,1]
+    gt2 = linked_genotypes[i,2]
+    graph_matrix[gt1, gt2] = 1
+}
+
+    #now make a graph using igraph
+  requireNamespace('igraph')
+  gr <- igraph::graph_from_adjacency_matrix(graph_matrix, mode = "undirected", weighted = NULL)
+  #cluster the graph
+  graph_membership <- igraph::cluster_walktrap(gr)$membership
+  names(graph_membership) <- igraph::V(gr)$name
+  cluster_colors <- cluster_color_ramp()(length(unique(graph_membership)))
+  names(cluster_colors) <- unique(graph_membership)
+  requireNamespace('ggraph')
+  set.seed(0)
+  membership_graph_plot <- ggraph::ggraph(gr, layout = 'fr') + ggraph::geom_edge_link() +
+    #geom_node_point(pch = 21, aes(fill = factor(clusters)), size = 5) +
+    theme_void() +
+    scale_fill_manual(values = cluster_colors) +
+    theme(legend.position = 'none') + ggraph::geom_node_label(aes(label = graph_membership, fill = factor(graph_membership)))
+
+    #now get the membership of each of these clusters per channel
+  ident_mat <- matrix(0, ncol = length(ch_use), nrow = length(unique(graph_membership)))
+  colnames(ident_mat) <- ch_use
+  rownames(ident_mat) <- unique(graph_membership)
+#now make a map between channels and clusters
+map_mat = do.call(rbind, lapply(ch_use, function(x){
+    vcf_use = vcf_list[[x]]
+    df = data.frame("channel" = x, "cluster" = paste0(x, "_", colnames(vcf_use@gt[, 2:ncol(vcf_use@gt)])))
+}))
+#now fill in the ident mat
+for(i in rownames(ident_mat)){
+cl_samples = colnames(graph_matrix)[graph_membership %in% i]
+channels = map_mat[map_mat$cluster %in% cl_samples, 1]
+    ident_mat[i, channels] = 1
+    }
+  #plot membership by cluster
+  requireNamespace("reshape2")
+  ident_mat_df <- reshape2::melt(ident_mat)
+  membership_plot <- ggplot(ident_mat_df, aes(x= factor(Var1), y = factor(Var2, levels = ch_use), fill = factor(value))) +
+    geom_tile(color = 'grey80') + scale_fill_manual(values = c('1' = 'black',
+                                                                             '0' = 'white')) +
+    theme_classic() + coord_fixed() +
+    theme(legend.position = "none", axis.line = element_blank(),
+          axis.ticks = element_blank(),
+          axis.title = element_text(size =7.5, color = 'black', face = 'bold'),
+          axis.text = element_text(color = 'black', size = 5, face = 'plain')) +
+    xlab("Computed genotypes") + ylab("10X channel")
+
+  #now we test whether the graph is a collection  of complete subgraphs
+
+subgraph_checks <- unlist(lapply(unique(graph_membership), function(m){
+  requireNamespace('igraph')
+    subgraph <- igraph::induced_subgraph(gr, vids = igraph::V(gr)$name %in% names(graph_membership)[graph_membership %in% m] )
+    check_complete_graph(subgraph)
+  }))
+
+if(all(subgraph_checks)){
+  message("the membership graph is a collection of complete subgraphs as expected")
+}else{
+  warning("the membership graph is NOT a collection of complete subgraphs - donor genotype matching is probably not possible - please double check the experimental design ")
+}
+  #then return a bunch of stuff
+  return(list("genotype_cluster_graph" = gr,
+              "graph_membership" = graph_membership,
+              "graph_plot" = membership_graph_plot,
+              "membership_plot" = membership_plot,
+              "membership_matrix" = ident_mat, 
+             "histogram" = link_hist))
+}
