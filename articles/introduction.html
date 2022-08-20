@@ -43,7 +43,7 @@
   <a href="../reference/index.html">Reference</a>
 </li>
 <li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
     Articles
      
     <span class="caret"></span>
@@ -70,7 +70,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Introduction to GenotypeMixtures</h1>
             
-            <h4 data-toc-skip class="date">2022-01-24</h4>
+            <h4 data-toc-skip class="date">2022-08-20</h4>
       
       
       <div class="hidden name"><code>introduction.Rmd</code></div>
@@ -82,27 +82,27 @@
 <p>GenotypeMixtures is a handy package that builds on the souporcell package (Heaton et al. 2020), to stitch together genotypes across multiple single cell genomics experiments with an overlapping mixture experimental design…</p>
 <p>Install GenotypeMixtures from github. Requires devtools.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="co">#devtools::install_github("bjstewart1/GenotypeMixtures")</span></code></pre></div>
+<code class="sourceCode R"><span><span class="co">#devtools::install_github("bjstewart1/GenotypeMixtures")</span></span></code></pre></div>
 <p>Load GenotypeMixtures</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">GenotypeMixtures</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">GenotypeMixtures</span><span class="op">)</span></span></code></pre></div>
 <p>Experimental designs can be read in using this function if you point at a .csv Alternatively you can read in the .csv however you like, or construct from another file The experiments (10X channels (mixtures) should be rows, and the donors/genotypes should be columns. Membership is denoted by 1 vs 0.</p>
-<pre><code><span class="co">#&gt; reading experimental design</span>
-<span class="co">#&gt; Using channel as id variables</span></code></pre>
+<pre><code><span><span class="co">#&gt; reading experimental design</span></span>
+<span><span class="co">#&gt; Using channel as id variables</span></span></code></pre>
 <p><img src="introduction_files/figure-html/unnamed-chunk-4-1.png" width="700"></p>
 <p>We can also read in the locations of the souporcell directories The first column should be the mixture name, the second column should be the path to the soup or cell directory There is some built in dummy vcf files in the package for this vignette</p>
-<pre><code><span class="co">#&gt;      channel</span>
-<span class="co">#&gt; 1 mixtures_1</span>
-<span class="co">#&gt; 2 mixtures_2</span>
-<span class="co">#&gt; 3 mixtures_3</span>
-<span class="co">#&gt; 4 mixtures_4</span>
-<span class="co">#&gt; 5 mixtures_5</span>
-<span class="co">#&gt;                                                          SOC_directory</span>
-<span class="co">#&gt; 1 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_1</span>
-<span class="co">#&gt; 2 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_2</span>
-<span class="co">#&gt; 3 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_3</span>
-<span class="co">#&gt; 4 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_4</span>
-<span class="co">#&gt; 5 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_5</span></code></pre>
+<pre><code><span><span class="co">#&gt;      channel</span></span>
+<span><span class="co">#&gt; 1 mixtures_1</span></span>
+<span><span class="co">#&gt; 2 mixtures_2</span></span>
+<span><span class="co">#&gt; 3 mixtures_3</span></span>
+<span><span class="co">#&gt; 4 mixtures_4</span></span>
+<span><span class="co">#&gt; 5 mixtures_5</span></span>
+<span><span class="co">#&gt;                                                          SOC_directory</span></span>
+<span><span class="co">#&gt; 1 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_1</span></span>
+<span><span class="co">#&gt; 2 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_2</span></span>
+<span><span class="co">#&gt; 3 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_3</span></span>
+<span><span class="co">#&gt; 4 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_4</span></span>
+<span><span class="co">#&gt; 5 /Users/runner/work/_temp/Library/GenotypeMixtures/extdata/mixtures_5</span></span></code></pre>
 <p>Now we plug this into the main function which constructs a genotype cluster graph</p>
 <pre><code>#&gt; checking files
 #&gt; 
@@ -111,7 +111,7 @@
 #&gt; reading in VCF files
 #&gt; 
 #&gt;    *****       ***   vcfR   ***       *****
-#&gt;    This is vcfR 1.12.0 
+#&gt;    This is vcfR 1.13.0 
 #&gt;      browseVignettes('vcfR') # Documentation
 #&gt;      citation('vcfR') # Citation
 #&gt;    *****       *****      *****       *****
@@ -139,62 +139,62 @@
 #&gt; the membership graph is a collection of complete subgraphs as expected</code></pre>
 <p>Now we can plot the graph which stitches together the genotypes</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">genotype_clustering_output</span><span class="op">$</span><span class="va">graph_plot</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">genotype_clustering_output</span><span class="op">$</span><span class="va">graph_plot</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/unnamed-chunk-7-1.png" width="700"></p>
 <p>Now we can plot the membership matrix which tells us which of our genotypes belongs to which mixtures</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">genotype_clustering_output</span><span class="op">$</span><span class="va">membership_plot</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">genotype_clustering_output</span><span class="op">$</span><span class="va">membership_plot</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <p>Now we can plot genotype VAFs - this is a useful diagnostic plot; matching genotypes should have their variants along the diagnonal. This is synthetic data, but real data should look reasonably similar to this</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_cross_vaf.html">plot_cross_vaf</a></span><span class="op">(</span>experiment_1_path <span class="op">=</span> <span class="va">file_locations</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">]</span>, 
-               experiment_2_path <span class="op">=</span> <span class="va">file_locations</span><span class="op">[</span><span class="fl">3</span>,<span class="fl">2</span><span class="op">]</span>, 
-               experiment_1_name <span class="op">=</span> <span class="va">file_locations</span><span class="op">[</span><span class="fl">2</span>,<span class="fl">1</span><span class="op">]</span>,
-               experiment_2_name <span class="op">=</span> <span class="va">file_locations</span><span class="op">[</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_cross_vaf.html">plot_cross_vaf</a></span><span class="op">(</span>experiment_1_path <span class="op">=</span> <span class="va">file_locations</span><span class="op">[</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">]</span>, </span>
+<span>               experiment_2_path <span class="op">=</span> <span class="va">file_locations</span><span class="op">[</span><span class="fl">3</span>,<span class="fl">2</span><span class="op">]</span>, </span>
+<span>               experiment_1_name <span class="op">=</span> <span class="va">file_locations</span><span class="op">[</span><span class="fl">2</span>,<span class="fl">1</span><span class="op">]</span>,</span>
+<span>               experiment_2_name <span class="op">=</span> <span class="va">file_locations</span><span class="op">[</span><span class="fl">3</span>,<span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
 <p>We can map these computed genotypes back to the original genotypes in our experimental design</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cluster_mapping</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/membership_map.html">membership_map</a></span><span class="op">(</span>experimental_design <span class="op">=</span> <span class="va">experimental_design</span>,
-                                  graph_output <span class="op">=</span>  <span class="va">genotype_clustering_output</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">cluster_mapping</span><span class="op">)</span>
-<span class="co">#&gt;       channel  SOC_cluster genotype_cluster   genotype</span>
-<span class="co">#&gt; 26 mixtures_2 mixtures_2_4                3 genotype_8</span>
-<span class="co">#&gt; 27 mixtures_4 mixtures_4_4                3 genotype_8</span>
-<span class="co">#&gt; 28 mixtures_5 mixtures_5_4                3 genotype_8</span>
-<span class="co">#&gt; 29 mixtures_3 mixtures_3_4                1 genotype_9</span>
-<span class="co">#&gt; 30 mixtures_4 mixtures_4_5                1 genotype_9</span>
-<span class="co">#&gt; 31 mixtures_5 mixtures_5_5                1 genotype_9</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cluster_mapping</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/membership_map.html">membership_map</a></span><span class="op">(</span>experimental_design <span class="op">=</span> <span class="va">experimental_design</span>,</span>
+<span>                                  graph_output <span class="op">=</span>  <span class="va">genotype_clustering_output</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">cluster_mapping</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       channel  SOC_cluster genotype_cluster   genotype</span></span>
+<span><span class="co">#&gt; 26 mixtures_2 mixtures_2_4                3 genotype_8</span></span>
+<span><span class="co">#&gt; 27 mixtures_4 mixtures_4_4                3 genotype_8</span></span>
+<span><span class="co">#&gt; 28 mixtures_5 mixtures_5_4                3 genotype_8</span></span>
+<span><span class="co">#&gt; 29 mixtures_3 mixtures_3_4                1 genotype_9</span></span>
+<span><span class="co">#&gt; 30 mixtures_4 mixtures_4_5                1 genotype_9</span></span>
+<span><span class="co">#&gt; 31 mixtures_5 mixtures_5_5                1 genotype_9</span></span></code></pre></div>
 <p>Finally we can assign single cells across our experiments to genotype - feed the output of membership_map() to cells_to_genotypes The output of this can be easily added to the metadata of your single cell experiment/seurat/anndata object</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">cell_assignments</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cells_to_genotypes.html">cells_to_genotypes</a></span><span class="op">(</span>SOC_locations <span class="op">=</span> <span class="va">file_locations</span>, 
-                                       membership_mat <span class="op">=</span><span class="va">cluster_mapping</span><span class="op">)</span>
-<span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">cell_assignments</span><span class="op">)</span>
-<span class="co">#&gt;                 barcodes  status assignment    channel   genotype  SOC_cluster</span>
-<span class="co">#&gt; 23993 CAGCCGATCGTAGGAG-1 singlet          3 mixtures_5 genotype_7 mixtures_5_3</span>
-<span class="co">#&gt; 23994 ACACTGAAGCTCCTTC-1 singlet          0 mixtures_5 genotype_2 mixtures_5_0</span>
-<span class="co">#&gt; 23995 CATGCCTCACCTCGGA-1 singlet          5 mixtures_5 genotype_9 mixtures_5_5</span>
-<span class="co">#&gt; 23996 CCTACCACAAATACAG-1 singlet          0 mixtures_5 genotype_2 mixtures_5_0</span>
-<span class="co">#&gt; 23997 AGATTGCTCTCCTATA-1 singlet          0 mixtures_5 genotype_2 mixtures_5_0</span>
-<span class="co">#&gt; 23998 CCAGCGACATGGTTGT-1 singlet          1 mixtures_5 genotype_4 mixtures_5_1</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">cell_assignments</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cells_to_genotypes.html">cells_to_genotypes</a></span><span class="op">(</span>SOC_locations <span class="op">=</span> <span class="va">file_locations</span>, </span>
+<span>                                       membership_mat <span class="op">=</span><span class="va">cluster_mapping</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">cell_assignments</span><span class="op">)</span></span>
+<span><span class="co">#&gt;                 barcodes  status assignment    channel   genotype  SOC_cluster</span></span>
+<span><span class="co">#&gt; 23993 CAGCCGATCGTAGGAG-1 singlet          3 mixtures_5 genotype_7 mixtures_5_3</span></span>
+<span><span class="co">#&gt; 23994 ACACTGAAGCTCCTTC-1 singlet          0 mixtures_5 genotype_2 mixtures_5_0</span></span>
+<span><span class="co">#&gt; 23995 CATGCCTCACCTCGGA-1 singlet          5 mixtures_5 genotype_9 mixtures_5_5</span></span>
+<span><span class="co">#&gt; 23996 CCTACCACAAATACAG-1 singlet          0 mixtures_5 genotype_2 mixtures_5_0</span></span>
+<span><span class="co">#&gt; 23997 AGATTGCTCTCCTATA-1 singlet          0 mixtures_5 genotype_2 mixtures_5_0</span></span>
+<span><span class="co">#&gt; 23998 CCAGCGACATGGTTGT-1 singlet          1 mixtures_5 genotype_4 mixtures_5_1</span></span></code></pre></div>
 <p>The package can also output an experimental design with varying levels of density</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">dense_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_overlapping_mixture.html">make_overlapping_mixture</a></span><span class="op">(</span>n_mixtures <span class="op">=</span> <span class="fl">12</span>, n_genotypes <span class="op">=</span> <span class="fl">7</span>, density <span class="op">=</span> <span class="fl">1</span> <span class="op">)</span>
-<span class="va">medium_density_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_overlapping_mixture.html">make_overlapping_mixture</a></span><span class="op">(</span>n_mixtures <span class="op">=</span> <span class="fl">12</span>, n_genotypes <span class="op">=</span> <span class="fl">7</span>, density <span class="op">=</span> <span class="fl">0.5</span> <span class="op">)</span>
-<span class="va">sparse_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_overlapping_mixture.html">make_overlapping_mixture</a></span><span class="op">(</span>n_mixtures <span class="op">=</span> <span class="fl">12</span>, n_genotypes <span class="op">=</span> <span class="fl">7</span>, density <span class="op">=</span> <span class="fl">0</span> <span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">dense_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_overlapping_mixture.html">make_overlapping_mixture</a></span><span class="op">(</span>n_mixtures <span class="op">=</span> <span class="fl">12</span>, n_genotypes <span class="op">=</span> <span class="fl">7</span>, density <span class="op">=</span> <span class="fl">1</span> <span class="op">)</span></span>
+<span><span class="va">medium_density_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_overlapping_mixture.html">make_overlapping_mixture</a></span><span class="op">(</span>n_mixtures <span class="op">=</span> <span class="fl">12</span>, n_genotypes <span class="op">=</span> <span class="fl">7</span>, density <span class="op">=</span> <span class="fl">0.5</span> <span class="op">)</span></span>
+<span><span class="va">sparse_design</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/make_overlapping_mixture.html">make_overlapping_mixture</a></span><span class="op">(</span>n_mixtures <span class="op">=</span> <span class="fl">12</span>, n_genotypes <span class="op">=</span> <span class="fl">7</span>, density <span class="op">=</span> <span class="fl">0</span> <span class="op">)</span></span></code></pre></div>
 <p>This is a dense design</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_experimental_design.html">plot_experimental_design</a></span><span class="op">(</span><span class="va">dense_design</span><span class="op">)</span>
-<span class="co">#&gt; Using channel as id variables</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_experimental_design.html">plot_experimental_design</a></span><span class="op">(</span><span class="va">dense_design</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Using channel as id variables</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/unnamed-chunk-13-1.png" width="700"></p>
 <p>This is a medium design</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_experimental_design.html">plot_experimental_design</a></span><span class="op">(</span><span class="va">medium_density_design</span><span class="op">)</span>
-<span class="co">#&gt; Using channel as id variables</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_experimental_design.html">plot_experimental_design</a></span><span class="op">(</span><span class="va">medium_density_design</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Using channel as id variables</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/unnamed-chunk-14-1.png" width="700"></p>
 <p>This is a sparse design</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="../reference/plot_experimental_design.html">plot_experimental_design</a></span><span class="op">(</span><span class="va">sparse_design</span><span class="op">)</span>
-<span class="co">#&gt; Using channel as id variables</span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/plot_experimental_design.html">plot_experimental_design</a></span><span class="op">(</span><span class="va">sparse_design</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Using channel as id variables</span></span></code></pre></div>
 <p><img src="introduction_files/figure-html/unnamed-chunk-15-1.png" width="700"></p>
   </div>
 
@@ -213,7 +213,7 @@
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.2.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.6.</p>
 </div>
 
       </footer>
